@@ -6,7 +6,7 @@ authors = [
     {name = "gozilla",email = "wpdr5r@gmail.com"}
 ]
 readme = "README.md"
-requires-python = "=3.12.12"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi[standart] (>=0.128.0,<0.129.0)",
     "pydantic-settings (>=2.12.0,<3.0.0)",
