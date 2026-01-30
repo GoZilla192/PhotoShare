@@ -1,7 +1,7 @@
 from fastapi import Depends
 
-from models.user import User
-from service.security import SecurityService
+from app.models.user import User
+from app.service.security import SecurityService
 
 
 def get_security_service() -> SecurityService:
