@@ -13,9 +13,9 @@ class AuthService:
         email: str,
         password_hash: str,
     ) -> User:
-        users_count = await self._user_repo.count_users()
+        first_user_id = await self._user_repo.get_first_user_id()
 
-        role = UserRole.admin if users_count == 0 else UserRole.user
+        role = UserRole.admin if first_user_id is None else UserRole.user
 
         user = User(
             username=username,

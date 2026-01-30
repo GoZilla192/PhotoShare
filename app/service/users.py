@@ -7,9 +7,6 @@ class UserService:
     def __init__(self, user_repo: UserRepository) -> None:
         self._user_repo = user_repo
 
-    async def count_users(self) -> int:
-        return await self._user_repo.count_users()
-
     async def create_user(self, user: User) -> User:
         return await self._user_repo.create_user(user)
 
@@ -19,8 +16,8 @@ class UserService:
         email: str,
         password_hash: str,
     ) -> User:
-        users_count = await self.count_users()
-        role = UserRole.admin if users_count == 0 else UserRole.user
+        first_user_id = await self._user_repo.get_first_user_id()
+        role = UserRole.admin if first_user_id is None else UserRole.user
 
         user = User(
             username=username,
