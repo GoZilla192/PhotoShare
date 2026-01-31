@@ -1,25 +1,34 @@
+from __future__ import annotations
 from datetime import datetime
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Text
-from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+from app.models import Photo, User
 
 
 class Comment(Base):
     __tablename__ = "comments"
 
-    id = Column(Integer, primary_key=True)
-    photo_id = Column(ForeignKey("photos.id"), nullable=False)
-    user_id = Column(ForeignKey("users.id"), nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    text = Column(Text, nullable=False)
+    photo_id: Mapped[int] = mapped_column(ForeignKey("photos.id"), nullable=False)
+    user_id:  Mapped[int] = mapped_column(ForeignKey("users.id"),  nullable=False)
 
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(
-        DateTime(timezone=True),
+    text: Mapped[str] = mapped_column(nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        nullable=False,
     )
 
-    photo = relationship("Photo", back_populates="comments")
-    user = relationship("User", back_populates="comments")
+    updated_at: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # relations
+    photo: Mapped["Photo"] = relationship(back_populates="comments")
+    user:  Mapped["User"]  = relationship(back_populates="comments")
