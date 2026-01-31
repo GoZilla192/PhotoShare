@@ -37,3 +37,7 @@ class User(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
+
+    photos = relationship("Photo", back_populates="user")
+    comments = relationship("Comment", back_populates="user")
+    ratings = relationship("Rating", back_populates="user")
