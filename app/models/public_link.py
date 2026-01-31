@@ -1,22 +1,38 @@
+from __future__ import annotations
 from datetime import datetime
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
+from app.database import Base, TransformedImage
 
 
 class PublicLink(Base):
     __tablename__ = "public_links"
 
-    id = Column(Integer, primary_key=True)
-    transformed_image_id = Column(
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    transformed_image_id: Mapped[int] = mapped_column(
         ForeignKey("transformed_images.id"),
         nullable=False
     )
 
-    uuid = Column(String(36), unique=True, nullable=False)
-    qr_code_url = Column(String(500), nullable=False)
+    uuid: Mapped[str] = mapped_column(
+        String(36),
+        unique=True,
+        nullable=False
+    )
 
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    qr_code_url: Mapped[str] = mapped_column(
+        String(500),
+        nullable=False
+    )
 
-    transformed_image = relationship("TransformedImage", back_populates="public_links")
+    created_at: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow,           # або lambda: datetime.utcnow()
+        nullable=False
+    )
+
+    # relations
+    transformed_image: Mapped["TransformedImage"] = relationship(
+        back_populates="public_links"
+    )
