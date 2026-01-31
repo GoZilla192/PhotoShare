@@ -1,8 +1,10 @@
 from datetime import datetime
 from sqlalchemy import Boolean, DateTime, Enum as SAEnum, Integer, String, func
-from sqlalchemy.orm import Mapped, mapped_column
-from app.models.base import Base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.database import Base
 from app.models.roles import UserRole
+from app.models import Photo, Comment
 
 class User(Base):
     __tablename__ = "users"
@@ -38,6 +40,6 @@ class User(Base):
         onupdate=func.now(),
     )
 
-    photos = relationship("Photo", back_populates="user")
-    comments = relationship("Comment", back_populates="user")
-    ratings = relationship("Rating", back_populates="user")
+    # relations
+    photos:   Mapped[list["Photo"]]   = relationship(back_populates="user")
+    comments: Mapped[list["Comment"]] = relationship(back_populates="user")
