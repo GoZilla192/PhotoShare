@@ -1,33 +1,48 @@
+from __future__ import annotations
 from datetime import datetime
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
+from typing import List
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 from app.models.photo_tags import photo_tags
+from app.models import Tag, User, Comment, TransformedImage
 
 
 class Photo(Base):
     __tablename__ = "photos"
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(ForeignKey("users.id"), nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    image_url = Column(String(500), nullable=False)
-    description = Column(Text)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(
-        DateTime(timezone=True),
+    image_url: Mapped[str] = mapped_column(nullable=False)
+    description: Mapped[str | None] = mapped_column(nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        nullable=False
     )
 
-    user = relationship("User", back_populates="photos")
-    comments = relationship("Comment", back_populates="photo")
-    ratings = relationship("Rating", back_populates="photo")
-    transformed_images = relationship("TransformedImage", back_populates="photo")
+    updated_at: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False
+    )
 
-    tags = relationship(
+    # many-to-one / one-to-many
+    user: Mapped["User"] = relationship(back_populates="photos")
+
+    comments: Mapped[List["Comment"]] = relationship(
+        back_populates="photo"
+    )
+
+    transformed_images: Mapped[List["TransformedImage"]] = relationship(
+        back_populates="photo"
+    )
+
+    # many-to-many
+    tags: Mapped[List["Tag"]] = relationship(
         "Tag",
         secondary=photo_tags,
         back_populates="photos"
