@@ -23,3 +23,13 @@ class UserRepository:
             self._session.add(user)
         await self._session.refresh(user)
         return user
+
+    async def get_by_email(self, email: str) -> User | None:
+        async with self._session.begin():
+            res = await self._session.execute(select(User).where(User.email == email))
+            return res.scalar_one_or_none()
+
+    async def get_by_id(self, user_id: int) -> User | None:
+        async with self._session.begin():
+            res = await self._session.execute(select(User).where(User.id == user_id))
+            return res.scalar_one_or_none()
