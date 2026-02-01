@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.ext.associationproxy import association_proxy
 
 from app.models.photo_tags import PhotoTag
 from app.models.base import Base
@@ -41,8 +42,5 @@ class Photo(Base):
     )
 
     # many-to-many
-    tags: Mapped[List["Tag"]] = relationship(
-        "Tag",
-        secondary=PhotoTag,
-        back_populates="photos"
-    )
+    photo_tags: Mapped[List["PhotoTag"]] = relationship("PhotoTag", back_populates="photo")
+    tags: List["Tag"] = association_proxy("photo_tags", "tag")

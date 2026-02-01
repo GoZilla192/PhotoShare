@@ -1,7 +1,8 @@
-from sqlalchemy import select, func
+from sqlalchemy import select, func, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import User
+from app.models import User
+from app.schemas import UserCreateSchema, UserReadSchema
 
 
 class UserRepository:
@@ -18,8 +19,19 @@ class UserRepository:
             res = await self._session.execute(select(func.min(User.id)))
             return res.scalar_one()
 
-    async def create_user(self, user: User) -> User:
-        async with self._session.begin():
-            self._session.add(user)
-        await self._session.refresh(user)
+    async def create_user(self, user: UserCreateSchema) -> User:
+        query = insert(User).values(
+            **user.model_dump()
+        ).returning(User.id)
+        
+        async with self._session as session:
+            user_id = (await session.execute(query)).scalar()
+            await session.commit()
+            return await self.get_user_by_id(user_id)
+    
+    async def get_user_by_id(self, user_id: int) -> User | None:
+        query = select(User).where(User.id == user_id)
+        async with self._session as session:
+            user = (await session.execute(query)).scalar_one_or_none()
+        
         return user
