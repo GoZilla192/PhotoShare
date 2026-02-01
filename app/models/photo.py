@@ -16,7 +16,8 @@ class Photo(Base):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
-    image_url: Mapped[str] = mapped_column(nullable=False)
+    photo_unique_url: Mapped[str] = mapped_column(nullable=False, unique=True) # unique url on photo
+    photo_url: Mapped[str] = mapped_column(nullable=False) # path to photo on OS
     description: Mapped[str | None] = mapped_column(nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
