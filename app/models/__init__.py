@@ -6,3 +6,4 @@ from app.models.transformed_image import TransformedImage
 from app.models.public_link import PublicLink
 from app.models.base import Base
 from app.models.photo_tags import PhotoTag
+from app.models.roles import UserRole

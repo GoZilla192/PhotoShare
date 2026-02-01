@@ -1,10 +1,10 @@
-import os
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.settings import Settings
 
 def _get_database_url() -> str:
-    database_url = os.getenv("DATABASE_URL")
+    database_url = Settings().database_url
     if not database_url:
         raise RuntimeError("DATABASE_URL is not set")
     return database_url

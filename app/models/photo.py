@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.ext.associationproxy import association_proxy
 
 from app.models.photo_tags import PhotoTag
 from app.models.base import Base
@@ -15,7 +16,8 @@ class Photo(Base):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
-    image_url: Mapped[str] = mapped_column(nullable=False)
+    photo_unique_url: Mapped[str] = mapped_column(nullable=False, unique=True) # unique url on photo
+    photo_url: Mapped[str] = mapped_column(nullable=False) # path to photo on OS
     description: Mapped[str | None] = mapped_column(nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -41,8 +43,5 @@ class Photo(Base):
     )
 
     # many-to-many
-    tags: Mapped[List["Tag"]] = relationship(
-        "Tag",
-        secondary=PhotoTag,
-        back_populates="photos"
-    )
+    photo_tags: Mapped[List["PhotoTag"]] = relationship("PhotoTag", back_populates="photo")
+    tags: List["Tag"] = association_proxy("photo_tags", "tag")
