@@ -2,9 +2,8 @@ from __future__ import annotations
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
-from app.models.photo_tags import photo_tags
-from app.models import Photo
+from app.models.photo_tags import PhotoTag
+from app.models.base import Base
 
 
 class Tag(Base):
@@ -21,6 +20,6 @@ class Tag(Base):
     # many-to-many
     photos: Mapped[list["Photo"]] = relationship(
         "Photo",
-        secondary=photo_tags,
+        secondary=PhotoTag,
         back_populates="tags"
     )

@@ -3,8 +3,7 @@ from datetime import datetime
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base, TransformedImage
-
+from app.models.base import Base
 
 class PublicLink(Base):
     __tablename__ = "public_links"

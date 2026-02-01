@@ -4,9 +4,8 @@ from typing import List
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
-from app.models.photo_tags import photo_tags
-from app.models import Tag, User, Comment, TransformedImage
+from app.models.photo_tags import PhotoTag
+from app.models.base import Base
 
 
 class Photo(Base):
@@ -44,6 +43,6 @@ class Photo(Base):
     # many-to-many
     tags: Mapped[List["Tag"]] = relationship(
         "Tag",
-        secondary=photo_tags,
+        secondary=PhotoTag,
         back_populates="photos"
     )

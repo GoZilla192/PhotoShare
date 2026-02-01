@@ -2,9 +2,9 @@ from datetime import datetime
 from sqlalchemy import Boolean, DateTime, Enum as SAEnum, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
 from app.models.roles import UserRole
-from app.models import Photo, Comment
+from app.models.base import Base
+
 
 class User(Base):
     __tablename__ = "users"
