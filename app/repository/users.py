@@ -1,4 +1,4 @@
-from sqlalchemy import select, func, insert, delete
+from sqlalchemy import select, func, insert, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import User
@@ -35,3 +35,14 @@ class UserRepository:
             user = (await session.execute(query)).scalar_one_or_none()
         
         return user
+    
+    async def update_user_info(self, user_id: int, new_info_about_user: UserCreateSchema) -> User:
+        query = update(User).where(User.id == user_id).values(
+            **new_info_about_user.model_dump()
+        )
+        
+        async with self._session as session:
+            await session.execute(query)
+            await session.commit()
+            
+        return await self.get_user_by_id(user_id=user_id)
