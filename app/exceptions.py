@@ -8,3 +8,7 @@ class PermissionDeniedError(ServiceError):
 
 class InactiveUserError(ServiceError):
     """Raised when a user is inactive."""
+
+
+class NotFoundError(ServiceError):
+    """Raised when a requested entity is not found."""
