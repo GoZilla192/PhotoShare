@@ -3,6 +3,7 @@ from app.models.roles import UserRole
 from app.models.user import User
 from app.repository.users import UserRepository
 from app.service.security import SecurityService
+from app.exceptions import InactiveUserError, InvalidCredentialsError
 
 
 class AuthService:
@@ -34,12 +35,12 @@ class AuthService:
         user = await self._user_repo.get_by_email(email)
 
         if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+            raise InvalidCredentialsError()
 
         if not user.is_active:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is inactive")
+            raise InactiveUserError()
 
         if not self._security.verify_password(password, user.password_hash):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+            raise InvalidCredentialsError()
 
         return user
