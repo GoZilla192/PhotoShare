@@ -8,7 +8,17 @@ class PhotoRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def create(self, photo: Photo) -> Photo:
+    async def create(
+        self,
+        owner_id: int,
+        url: str,
+        description: str | None = None,
+    ) -> Photo:
+        photo = Photo(
+            owner_id=owner_id,
+            url=url,
+            description=description,
+        )
         async with self._session.begin():
             self._session.add(photo)
         await self._session.refresh(photo)

@@ -15,12 +15,11 @@ class PhotoService:
         url: str,
         description: str | None = None,
     ) -> Photo:
-        photo = Photo(
+        return await self._photo_repo.create(
             owner_id=owner_id,
             url=url,
             description=description,
         )
-        return await self._photo_repo.create(photo)
 
     async def get_photo(self, photo_id: int) -> Photo:
         photo = await self._photo_repo.get(photo_id)
