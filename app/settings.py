@@ -8,6 +8,10 @@ class Settings(BaseSettings):
 	DB_PASSWORD: str
 	DB_NAME: str
 	DB_DRIVER: str = "postgresql+asyncpg"
+
+	SECRET_KEY: str
+	ALGORITHM: str
+	ACCESS_TOKEN_EXPIRE_MINUTES: int
 	
 	model_config = SettingsConfigDict(
 		env_file=".env",

@@ -12,3 +12,5 @@ class InactiveUserError(ServiceError):
 
 class NotFoundError(ServiceError):
     """Raised when a requested entity is not found."""
+class InvalidCredentialsError(ServiceError):
+    """Raised when an invalid credentials are given."""
