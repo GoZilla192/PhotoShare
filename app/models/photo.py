@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import List
-from sqlalchemy import DateTime, ForeignKey, String, Text, func
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 
@@ -14,15 +14,21 @@ class Photo(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
-    url: Mapped[str] = mapped_column(String(500), nullable=False, unique=True)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    photo_unique_url: Mapped[str] = mapped_column(nullable=False, unique=True) # unique url on photo
+    photo_url: Mapped[str] = mapped_column(nullable=False) # path to photo on OS
+    description: Mapped[str | None] = mapped_column(nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=False),
-        nullable=False,
-        server_default=func.now(),
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False
     )
 
     # many-to-one / one-to-many
