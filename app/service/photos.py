@@ -11,13 +11,15 @@ class PhotoService:
 
     async def create_photo(
         self,
-        owner_id: int,
-        url: str,
+        user_id: int,
+        photo_url: str,
+        photo_unique_url: str,
         description: str | None = None,
     ) -> Photo:
         return await self._photo_repo.create(
-            owner_id=owner_id,
-            url=url,
+            user_id=user_id,
+            photo_url=photo_url,
+            photo_unique_url=photo_unique_url,
             description=description,
         )
 
@@ -27,8 +29,8 @@ class PhotoService:
             raise NotFoundError("Photo not found")
         return photo
 
-    async def get_photo_by_url(self, url: str) -> Photo:
-        photo = await self._photo_repo.get_by_url(url)
+    async def get_photo_by_unique_url(self, photo_unique_url: str) -> Photo:
+        photo = await self._photo_repo.get_by_unique_url(photo_unique_url)
         if photo is None:
             raise NotFoundError("Photo not found")
         return photo
@@ -48,11 +50,11 @@ class PhotoService:
         self._ensure_owner_or_admin(current_user, photo)
         await self._photo_repo.delete(photo)
 
-    async def list_by_user(self, owner_id: int) -> list[Photo]:
-        return await self._photo_repo.list_by_user(owner_id)
+    async def list_by_user(self, user_id: int) -> list[Photo]:
+        return await self._photo_repo.list_by_user(user_id)
 
     def _ensure_owner_or_admin(self, current_user: User, photo: Photo) -> None:
         if current_user.role == UserRole.admin:
             return
-        if photo.owner_id != current_user.id:
+        if photo.user_id != current_user.id:
             raise PermissionDeniedError("Insufficient permissions")

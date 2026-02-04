@@ -17,20 +17,21 @@ async def upload_photo(
     photo_service: PhotoService = Depends(get_photo_service),
 ) -> PhotoRead:
     photo = await photo_service.create_photo(
-        owner_id=current_user.id,
-        url=payload.url,
+        user_id=current_user.id,
+        photo_url=payload.photo_url,
+        photo_unique_url=payload.photo_unique_url,
         description=payload.description,
     )
     return photo
 
 
-@router.get("/by-url/{url}", response_model=PhotoRead)
-async def get_photo_by_url(
-    url: str,
+@router.get("/by-unique/{photo_unique_url}", response_model=PhotoRead)
+async def get_photo_by_unique_url(
+    photo_unique_url: str,
     photo_service: PhotoService = Depends(get_photo_service),
 ) -> PhotoRead:
     try:
-        return await photo_service.get_photo_by_url(url)
+        return await photo_service.get_photo_by_unique_url(photo_unique_url)
     except NotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

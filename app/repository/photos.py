@@ -10,13 +10,15 @@ class PhotoRepository:
 
     async def create(
         self,
-        owner_id: int,
-        url: str,
+        user_id: int,
+        photo_url: str,
+        photo_unique_url: str,
         description: str | None = None,
     ) -> Photo:
         photo = Photo(
-            owner_id=owner_id,
-            url=url,
+            user_id=user_id,
+            photo_url=photo_url,
+            photo_unique_url=photo_unique_url,
             description=description,
         )
         async with self._session.begin():
@@ -28,10 +30,10 @@ class PhotoRepository:
         async with self._session.begin():
             return await self._session.get(Photo, photo_id)
 
-    async def get_by_url(self, url: str) -> Photo | None:
+    async def get_by_unique_url(self, photo_unique_url: str) -> Photo | None:
         async with self._session.begin():
             res = await self._session.execute(
-                select(Photo).where(Photo.url == url)
+                select(Photo).where(Photo.photo_unique_url == photo_unique_url)
             )
             return res.scalar_one_or_none()
 
@@ -49,9 +51,9 @@ class PhotoRepository:
         async with self._session.begin():
             await self._session.delete(photo)
 
-    async def list_by_user(self, owner_id: int) -> list[Photo]:
+    async def list_by_user(self, user_id: int) -> list[Photo]:
         async with self._session.begin():
             res = await self._session.execute(
-                select(Photo).where(Photo.owner_id == owner_id)
+                select(Photo).where(Photo.user_id == user_id)
             )
             return list(res.scalars().all())
