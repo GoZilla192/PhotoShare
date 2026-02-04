@@ -1,8 +1,10 @@
 from datetime import datetime
 from sqlalchemy import Boolean, DateTime, Enum as SAEnum, Integer, String, func
-from sqlalchemy.orm import Mapped, mapped_column
-from app.models.base import Base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.models.roles import UserRole
+from app.models.base import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -37,3 +39,7 @@ class User(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
+
+    # relations
+    photos:   Mapped[list["Photo"]]   = relationship(back_populates="user")
+    comments: Mapped[list["Comment"]] = relationship(back_populates="user")
