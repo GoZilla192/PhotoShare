@@ -7,14 +7,9 @@ from app.service.auth import AuthService
 from app.service.security import SecurityService
 from app.repository.users import UserRepository
 from app.exceptions import InactiveUserError, InvalidCredentialsError
+from app.dependency.auth import get_auth_service
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
-
-
-def get_auth_service(db: AsyncSession = Depends(get_async_session)) -> AuthService:
-    user_repo = UserRepository(db)
-    return AuthService(user_repo)
-
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register_user(data: RegisterRequest, auth_service: AuthService = Depends(get_auth_service),):
