@@ -3,6 +3,7 @@ from app.models.photo import Photo
 from app.models.roles import UserRole
 from app.models.user import User
 from app.repository.photos import PhotoRepository
+from app.service.cloudinary import upload_photo, delete_photo
 
 
 class PhotoService:
@@ -12,13 +13,16 @@ class PhotoService:
     async def create_photo(
         self,
         user_id: int,
-        photo_url: str,
+        file,
         photo_unique_url: str,
         description: str | None = None,
     ) -> Photo:
+        upload_result = upload_photo(file)
+
         return await self._photo_repo.create(
             user_id=user_id,
-            photo_url=photo_url,
+            photo_url=upload_result["url"],
+            cloudinary_public_id=upload_result["public_id"],
             photo_unique_url=photo_unique_url,
             description=description,
         )
@@ -48,6 +52,7 @@ class PhotoService:
     async def delete_photo(self, photo_id: int, current_user: User) -> None:
         photo = await self.get_photo(photo_id)
         self._ensure_owner_or_admin(current_user, photo)
+        delete_photo(photo.cloudinary_public_id) # Cloudinary
         await self._photo_repo.delete(photo)
 
     async def list_by_user(self, user_id: int) -> list[Photo]:
