@@ -1,0 +1,1 @@
+main.py запускається тільки як python -m app.main або uvicorn app.main:app --reload
