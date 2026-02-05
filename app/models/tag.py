@@ -3,6 +3,7 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 
+from app.models import Photo
 from app.models.photo_tags import PhotoTag
 from app.models.base import Base
 
