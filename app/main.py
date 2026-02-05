@@ -1,12 +1,14 @@
-from fastapi import FastAPI
-from app.routers.auth import router as auth_router
+from app.app_factory import create_app
 
-from app.routers.photos import router as photos_router
+app = create_app()
 
-from app.routers import tags
+if __name__ == "__main__":
+    import uvicorn
 
-app = FastAPI()
-
-app.include_router(tags.router)
-app.include_router(photos_router)
-app.include_router(auth_router)
+    uvicorn.run(
+        "app.main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
+        log_level="info",
+    )
