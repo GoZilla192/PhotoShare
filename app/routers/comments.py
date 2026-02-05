@@ -10,7 +10,7 @@ router = APIRouter(prefix="/comments", tags=["comments"])
 security = SecurityService()
 
 @router.post("/photo/{photo_id}", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
-async def create_comment(photo_id: int, data: CommentCreateRequest, service: CommentService = Depends(get_comment_service), current_user: User = Depends(security.get_current_user)):
+async def create_comment(photo_id: int, data: CommentCreateRequest, service: CommentService = Depends(get_comment_service), current_user: User = Depends(security.get_current_active_user)):
     return await service.create_comment(
         photo_id=photo_id,
         user_id=current_user.id,
@@ -18,7 +18,7 @@ async def create_comment(photo_id: int, data: CommentCreateRequest, service: Com
     )
 
 @router.put("/{comment_id}", response_model=CommentResponse)
-async def update_own_comment(comment_id: int, data: CommentUpdateRequest, service: CommentService = Depends(get_comment_service), current_user: User = Depends(security.get_current_user)):
+async def update_own_comment(comment_id: int, data: CommentUpdateRequest, service: CommentService = Depends(get_comment_service), current_user: User = Depends(security.get_current_active_user)):
     return await service.update_comment(
         comment_id=comment_id,
         user_id=current_user.id,
@@ -26,7 +26,7 @@ async def update_own_comment(comment_id: int, data: CommentUpdateRequest, servic
     )
 
 @router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_comment(comment_id: int, service: CommentService = Depends(get_comment_service), current_user: User = Depends(security.get_current_user)):
+async def delete_comment(comment_id: int, service: CommentService = Depends(get_comment_service), current_user: User = Depends(security.get_current_active_user)):
     await service.delete_comment(
         comment_id=comment_id,
         role=current_user.role
