@@ -57,3 +57,10 @@ class PhotoRepository:
                 select(Photo).where(Photo.user_id == user_id)
             )
             return list(res.scalars().all())
+        
+    async def get_photo_url_by_id(self, photo_id: int) -> str | None:
+        async with self._session.begin():
+            res = await self._session.execute(
+                select(Photo.photo_url).where(Photo.id == photo_id)
+            )
+            return res.scalar_one_or_none()
