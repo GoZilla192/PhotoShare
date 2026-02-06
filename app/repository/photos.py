@@ -64,3 +64,19 @@ class PhotoRepository:
                 select(Photo.photo_url).where(Photo.id == photo_id)
             )
             return res.scalar_one_or_none()
+
+    async def search(self, keyword: str | None = None, user_id: int | None = None, date_order: str | None = None) -> list[Photo]:
+        stmt = select(Photo)
+        if keyword:
+            stmt = stmt.where(Photo.description.ilike(f"%{keyword}%"))
+
+        if user_id is not None:
+            stmt = stmt.where(Photo.user_id == user_id)
+
+        if date_order == "asc":
+            stmt = stmt.order_by(Photo.created_at.asc())
+        elif date_order == "desc":
+            stmt = stmt.order_by(Photo.created_at.desc())
+
+        res = await self._session.execute(stmt)
+        return list(res.scalars().all())
