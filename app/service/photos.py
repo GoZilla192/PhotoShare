@@ -58,6 +58,13 @@ class PhotoService:
     async def list_by_user(self, user_id: int) -> list[Photo]:
         return await self._photo_repo.list_by_user(user_id)
 
+    async def search_photos(self, keyword: str | None = None, user_id: int | None = None, date_order: str | None = None) -> list[Photo]:
+        return await self._photo_repo.search(
+            keyword=keyword,
+            user_id=user_id,
+            date_order=date_order
+        )
+
     def _ensure_owner_or_admin(self, current_user: User, photo: Photo) -> None:
         if current_user.role == UserRole.admin:
             return
