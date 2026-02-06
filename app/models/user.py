@@ -40,6 +40,16 @@ class User(Base):
         onupdate=func.now(),
     )
 
-    # relations
-    photos:   Mapped[list["Photo"]]   = relationship(back_populates="user")
-    comments: Mapped[list["Comment"]] = relationship(back_populates="user")
+    # one-to-many
+    ratings: Mapped[list["Rating"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
+    photos: Mapped[list["Photo"]] = relationship(
+        back_populates="user"
+    )
+
+    comments: Mapped[list["Comment"]] = relationship(
+        back_populates="user"
+    )

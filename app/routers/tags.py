@@ -7,7 +7,6 @@ from app.database.db import get_async_session
 from app.repository.tags import TagRepository
 from app.schemas.tag import TagOut
 
-
 router = APIRouter(
     prefix="/tags",
     tags=["Tags"],

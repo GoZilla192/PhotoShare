@@ -18,6 +18,7 @@ class Photo(Base):
 
     photo_unique_url: Mapped[str] = mapped_column(nullable=False, unique=True) # unique url on photo
     photo_url: Mapped[str] = mapped_column(nullable=False) # path to photo on OS
+    cloudinary_public_id: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str | None] = mapped_column(nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -29,6 +30,12 @@ class Photo(Base):
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
         nullable=False
+    )
+
+    # one-to-one
+    ratings: Mapped[list["Rating"]] = relationship(
+        back_populates="photo",
+        cascade="all, delete-orphan"
     )
 
     # many-to-one / one-to-many

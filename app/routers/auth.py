@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_async_session
@@ -32,3 +32,25 @@ async def login_user(data: LoginRequest, auth_service: AuthService = Depends(get
     security = SecurityService()
     access_token = security.create_access_token(data={"sub": str(user.id), "role": user.role.value})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/logout", status_code=status.HTTP_501_NOT_IMPLEMENTED)
+async def logout(authorization: str | None = Header(default=None, alias="Authorization")):
+    """
+    Logout (stub)
+
+    TODO:
+    - Parse Bearer token
+    - Decode JWT, extract jti + exp
+    - Add jti to blacklist until exp
+    - Ensure auth dependency checks blacklist on every request
+    """
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid Authorization header (expected 'Bearer <token>')",
+        )
+
+    # token = authorization.split(" ", 1)[1].strip()
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+
