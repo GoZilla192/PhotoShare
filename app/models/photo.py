@@ -32,6 +32,12 @@ class Photo(Base):
         nullable=False
     )
 
+    # one-to-one
+    ratings: Mapped[list["Rating"]] = relationship(
+        back_populates="photo",
+        cascade="all, delete-orphan"
+    )
+
     # many-to-one / one-to-many
     user: Mapped["User"] = relationship(back_populates="photos")
 

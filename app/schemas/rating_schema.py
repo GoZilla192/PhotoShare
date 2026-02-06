@@ -1,11 +1,11 @@
 from pydantic import BaseModel, Field
 
 
-class RatingSetRequest(BaseModel):
+class RatingCreate(BaseModel):
     rating: int = Field(ge=1, le=5)
 
 
-class RatingResponse(BaseModel):
+class RatingStats(BaseModel):
     photo_id: int
     avg_rating: float
     ratings_count: int
