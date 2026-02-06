@@ -1,10 +1,12 @@
-from pydantic import BaseModel, conint
+from pydantic import BaseModel, Field
 
 
 class RatingCreate(BaseModel):
-    value: conint(ge=1, le=5)
+    rating: int = Field(ge=1, le=5)
 
 
 class RatingStats(BaseModel):
-    avg: float | None
-    count: int
+    photo_id: int
+    avg_rating: float
+    ratings_count: int
+    my_rating: int | None = None
