@@ -3,7 +3,7 @@ from fastapi import Depends
 from app.dependency.repository import get_photo_repository
 from app.models.user import User
 from app.repository.photos_repository import PhotoRepository
-from app.service.photos import PhotoService
+from app.service.photos_service import PhotoService
 from app.service.security import SecurityService
 
 

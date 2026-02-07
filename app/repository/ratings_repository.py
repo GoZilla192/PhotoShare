@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from sqlalchemy import select, delete, func
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.models.rating import Rating
 from app.repository.base_repository import BaseRepository
 

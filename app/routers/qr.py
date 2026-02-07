@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.service.qr import generate_photo_qr
+from app.service.qr_service import generate_photo_qr
 
 router = APIRouter(
     prefix="/qr",
