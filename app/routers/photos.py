@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 
 from app.dependency.service import get_current_user, get_photo_service
@@ -85,5 +86,26 @@ async def delete_photo(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.get("/search", response_model=list[PhotoRead])
-async def search_photo(keyword: str | None = Query(default=None), tag: str | None = Query(default=None), user_id: int | None = Query(default=None), date_order: str | None = Query(default=None, regex="^(asc|desc)$"), current_user: User = Depends(get_current_user), service: PhotoService = Depends(get_photo_service)):
-    return await service.search_photos(current_user=current_user, tag=tag, keyword=keyword, user_id=user_id, date_order=date_order)
+async def search_photo(
+        keyword: str | None = Query(default=None),
+        tag: str | None = Query(default=None),
+        user_id: int | None = Query(default=None),
+        date_from: datetime | None = Query(default=None),
+        date_to: datetime | None = Query(default=None),
+        rating_from: float | None = Query(default=None, ge=1.0, le=5.0),
+        rating_to: float | None = Query(default=None, ge=1.0, le=5.0),
+        date_order: str | None = Query(default=None, regex="^(asc|desc)$"),
+        current_user: User = Depends(get_current_user),
+        service: PhotoService = Depends(get_photo_service)
+):
+    return await service.search_photos(
+       current_user=current_user,
+        keyword=keyword,
+        tag=tag,
+        user_id=user_id,
+        date_from=date_from,
+        date_to=date_to,
+        rating_from=rating_from,
+        rating_to=rating_to,
+        date_order=date_order
+    )
