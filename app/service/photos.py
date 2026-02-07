@@ -1,3 +1,4 @@
+from datetime import datetime
 from app.exceptions import NotFoundError, PermissionDeniedError
 from app.models.photo import Photo
 from app.models.roles import UserRole
@@ -58,7 +59,19 @@ class PhotoService:
     async def list_by_user(self, user_id: int) -> list[Photo]:
         return await self._photo_repo.list_by_user(user_id)
 
-    async def search_photos(self, *, current_user = User, keyword: str | None = None, tag: str | None = None, user_id: int | None = None, date_order: str | None = None) -> list[Photo]:
+    async def search_photos(
+            self,
+            *,
+            current_user: User,
+            keyword: str | None = None,
+            tag: str | None = None,
+            user_id: int | None = None,
+            date_from: datetime | None = None,
+            date_to: datetime | None = None,
+            rating_from: float | None = None,
+            rating_to: float | None = None,
+            date_order: str | None = None
+    ) -> list[Photo]:
         if user_id is not None:
             if current_user.role not in (UserRole.admin, UserRole.moderator):
                 raise PermissionDeniedError("Only admin or moderator can search by user")
@@ -66,6 +79,10 @@ class PhotoService:
             keyword=keyword,
             tag=tag,
             user_id=user_id,
+            date_from=date_from,
+            date_to=date_to,
+            rating_from=rating_from,
+            rating_to=rating_to,
             date_order=date_order
         )
 
