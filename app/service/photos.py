@@ -59,6 +59,9 @@ class PhotoService:
         return await self._photo_repo.list_by_user(user_id)
 
     async def search_photos(self, keyword: str | None = None, user_id: int | None = None, date_order: str | None = None) -> list[Photo]:
+        if user_id is not None:
+            if current_user.role not in (UserRole.admin, UserRole.moderator):
+                raise PermissionDeniedError("Only admin or moderator can search by user")
         return await self._photo_repo.search(
             keyword=keyword,
             user_id=user_id,
