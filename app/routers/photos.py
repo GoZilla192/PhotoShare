@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 
 from app.dependency.service import get_current_user, get_photo_service
 from app.exceptions import NotFoundError, PermissionDeniedError
@@ -83,3 +83,7 @@ async def delete_photo(
             detail=str(exc),
         ) from exc
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.get("/search", response_model=list[PhotoRead])
+async def search_photo(keyword: str | None = Query(default=None), user_id: int | None = Query(default=None), date_order: str | None = Query(default=None, regex="^(asc|desc)$"), service: PhotoService = Depends(get_photo_service)):
+    return await service.search_photos(keyword=keyword, user_id=user_id, date_order=date_order)
