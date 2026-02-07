@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.database.db import get_async_session
-from app.repository.users import UserRepository
+from app.repository.users_repository import UserRepository
 from app.models.roles import UserRole
 from app.settings import Settings
 

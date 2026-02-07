@@ -5,7 +5,7 @@ from app.database.db import get_async_session
 from app.schemas.auth import RegisterRequest, LoginRequest
 from app.service.auth import AuthService
 from app.service.security import SecurityService
-from app.repository.users import UserRepository
+from app.repository.users_repository import UserRepository
 from app.exceptions import InactiveUserError, InvalidCredentialsError
 from app.dependency.auth import get_auth_service
 

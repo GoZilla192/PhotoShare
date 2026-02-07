@@ -1,39 +1,19 @@
-import base64
-from io import BytesIO
+from sqlalchemy.ext.asyncio import AsyncSession
 
-import qrcode
-
-
-# move this to .env later?
-QR_VERSION = 1
-QR_ERROR_CORRECTION = qrcode.constants.ERROR_CORRECT_L
-QR_BOX_SIZE = 10
-QR_BORDER = 4
+from app.service.qr import make_qr_code
+from app.repository.photos_repository import get_photo_url_by_id
 
 
-def make_qr_code(url: str) -> str:
+def generate_photo_qr(
+    db: AsyncSession,
+    photo_id: int
+) -> str | None:
     """
-    Generates a QR code for the given URL and returns it
-    as a base64-encoded PNG string.
-
-    Example usage:
-        img_str = make_qr_code('img_url')
-    in HTML:
-        <img src="data:image/png;base64,{img_str}" alt="QR code">
+    Generates a QR code for an image URL.
+    Returns a base64 string or None if the image is not found.
     """
-    qr = qrcode.QRCode(
-        version=QR_VERSION,
-        error_correction=QR_ERROR_CORRECTION,
-        box_size=QR_BOX_SIZE,
-        border=QR_BORDER,
-    )
+    photo_url = get_photo_url_by_id(db, photo_id)
+    if photo_url is None:
+        return None
 
-    qr.add_data(url)
-    qr.make(fit=True)
-
-    img = qr.make_image(fill_color="black", back_color="white")
-
-    buffer = BytesIO()
-    img.save(buffer, format="PNG")
-
-    return base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return make_qr_code(photo_url)
