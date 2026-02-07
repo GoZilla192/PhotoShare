@@ -1,9 +1,11 @@
-from sqlalchemy import select
+from datetime import datetime
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.photo import Photo
 from app.models.tag import Tag
 from app.models.photo_tags import PhotoTag
+from app.models.rating import Rating
 
 
 class PhotoRepository:
@@ -67,7 +69,17 @@ class PhotoRepository:
             )
             return res.scalar_one_or_none()
 
-    async def search(self, keyword: str | None = None, tag: str | None = None, user_id: int | None = None, date_order: str | None = None) -> list[Photo]:
+    async def search(
+            self,
+            keyword: str | None = None,
+            tag: str | None = None,
+            user_id: int | None = None,
+            date_from: datetime | None = None,
+            date_to: datetime | None = None,
+            rating_from: float | None = None,
+            rating_to: float | None = None,
+            date_order: str | None = None,
+    ) -> list[Photo]:
         stmt = select(Photo)
         if keyword:
             stmt = stmt.where(Photo.description.ilike(f"%{keyword}%"))
@@ -77,6 +89,23 @@ class PhotoRepository:
 
         if user_id is not None:
             stmt = stmt.where(Photo.user_id == user_id)
+
+        if date_from is not None:
+            stmt = stmt.where(Photo.created_at >= date_from)
+        if date_to is not None:
+            stmt = stmt.where(Photo.created_at <= date_to)
+
+        if rating_from is not None or rating_to is not None:
+            stmt = (
+                stmt.join(Rating, Rating.photo_id == Photo.id)
+                .group_by(Photo.id)
+            )
+            avg_rating = func.avg(Rating.value)
+
+            if rating_from is not None:
+                stmt = stmt.having(avg_rating >= rating_from)
+            if rating_to is not None:
+                stmt = stmt.having(avg_rating <= rating_to)
 
         if date_order == "asc":
             stmt = stmt.order_by(Photo.created_at.asc())
