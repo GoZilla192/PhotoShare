@@ -1,12 +1,13 @@
-from datetime import datetime
-from sqlalchemy import Boolean, DateTime, Enum as SAEnum, Integer, String, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from __future__ import annotations
 
+from sqlalchemy import Enum as SAEnum, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.models.mixins import IsActiveMixin, CreatedAtMixin, UpdatedAtMixin
 from app.models.roles import UserRole
 from app.models.base import Base
 
 
-class User(Base):
+class User(Base, IsActiveMixin, CreatedAtMixin, UpdatedAtMixin):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -21,29 +22,11 @@ class User(Base):
         server_default=UserRole.user.value,
     )
 
-    is_active: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        default=True,
-        server_default="true",
-    )
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=False),
-        nullable=False,
-        server_default=func.now(),
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=False),
-        nullable=False,
-        server_default=func.now(),
-        onupdate=func.now(),
-    )
-
     # one-to-many
     ratings: Mapped[list["Rating"]] = relationship(
         back_populates="user",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        passive_deletes = True
     )
 
     photos: Mapped[list["Photo"]] = relationship(
