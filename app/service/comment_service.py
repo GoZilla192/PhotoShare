@@ -1,8 +1,15 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.comment import Comment
-from app.models.roles import UserRole  # :contentReference[oaicite:6]{index=6}
+from app.models.roles import UserRole
+from app.repository.comment_repository import CommentRepository
+from app.repository.photos_repository import PhotoRepository
+
 
 class CommentService:
-    def __init__(self, session, comment_repo, photo_repo):
+    def __init__(self, session: AsyncSession,
+                 comment_repo: CommentRepository,
+                 photo_repo: PhotoRepository):
         self.session = session
         self.comments = comment_repo
         self.photos = photo_repo
@@ -22,7 +29,7 @@ class CommentService:
             raise PermissionError("Only owner can edit comment")
         c.text = new_text
         async with self.session.begin():
-            pass
+            await self.session.flush()
         return c
 
     async def delete(self, comment_id: int, actor_role: UserRole) -> None:

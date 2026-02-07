@@ -4,7 +4,7 @@ from app.dependency.service import get_current_user, get_photo_service
 from app.exceptions import NotFoundError, PermissionDeniedError
 from app.models.user import User
 from app.schemas.photo import PhotoCreate, PhotoRead, PhotoUpdateDescription
-from app.service.photos import PhotoService
+from app.service.photos_service import PhotoService
 
 
 router = APIRouter(prefix="/photos", tags=["photos"])
