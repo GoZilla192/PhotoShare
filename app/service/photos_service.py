@@ -49,7 +49,7 @@ class PhotoService:
 
     async def get_photo(self, photo_id: int) -> Photo:
         photo = await self.photos.get_by_id(photo_id)
-        if photo:
+        if not photo:
             raise NotFoundError("Photo not found")
         return photo
 

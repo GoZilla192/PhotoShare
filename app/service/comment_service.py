@@ -9,10 +9,10 @@ from app.repository.photos_repository import PhotoRepository
 class CommentService:
     def __init__(self, session: AsyncSession,
                  comment_repo: CommentRepository,
-                 photo_repo: PhotoRepository):
+                 photos_repo: PhotoRepository):
         self.session = session
         self.comments = comment_repo
-        self.photos = photo_repo
+        self.photos = photos_repo
 
     async def create(self, photo_id: int, user_id: int, text: str) -> Comment:
         # (опційно) перевірити що фото існує через photo_repo
