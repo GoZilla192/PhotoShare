@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 	CLOUDINARY_NAME: str
 	CLOUDINARY_API_KEY: str
 	CLOUDINARY_API_SECRET: str
+	CLOUDINARY_URL: str
 	
 	model_config = SettingsConfigDict(
 		env_file=".env",

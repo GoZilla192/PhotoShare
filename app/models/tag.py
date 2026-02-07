@@ -1,9 +1,8 @@
 from __future__ import annotations
+
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.associationproxy import association_proxy
-
-from app.models import Photo
 from app.models.photo_tags import PhotoTag
 from app.models.base import Base
 
@@ -21,7 +20,9 @@ class Tag(Base):
 
     # many-to-many
     photo_tags: Mapped[list[PhotoTag]] = relationship(
+        "PhotoTag",
         back_populates="tag",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
-    photos: list[Photo] = association_proxy("photo_tags", "photo")
+    photos: list["Photo"] = association_proxy("photo_tags", "photo")

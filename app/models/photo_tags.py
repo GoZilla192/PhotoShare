@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -10,11 +9,11 @@ class PhotoTag(Base):
     __tablename__ = "photo_tags"
 
     photo_id: Mapped[int] = mapped_column(
-        ForeignKey("photos.id"),
+        ForeignKey("photos.id", ondelete="CASCADE"),
         primary_key=True
     )
     tag_id: Mapped[int] = mapped_column(
-        ForeignKey("tags.id"),
+        ForeignKey("tags.id", ondelete="CASCADE"),
         primary_key=True
     )
 

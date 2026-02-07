@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from sqlalchemy import Integer, ForeignKey, CheckConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.models.base import Base
 
 
@@ -12,13 +11,15 @@ class Rating(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     photo_id: Mapped[int] = mapped_column(
-        ForeignKey("photos.id", ondelete="CASCADE"),
-        nullable=False
+        ForeignKey("photos.id",
+                   ondelete="CASCADE"),
+                    nullable=False
     )
 
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False
+        ForeignKey("users.id",
+                   ondelete="CASCADE"),
+                    nullable=False
     )
 
     value: Mapped[int] = mapped_column(
