@@ -2,7 +2,7 @@ from app.exceptions import NotFoundError, PermissionDeniedError
 from app.models.photo import Photo
 from app.models.roles import UserRole
 from app.models.user import User
-from app.repository.photos import PhotoRepository
+from app.repository.photos_repository import PhotoRepository
 from app.service.cloudinary import upload_photo, delete_photo
 
 

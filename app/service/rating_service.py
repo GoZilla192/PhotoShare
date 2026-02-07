@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 
 from app.models.rating import Rating
 from app.repository.ratings_repository import RatingRepository
-from app.repository.photos import PhotoRepository
+from app.repository.photos_repository import PhotoRepository
 from app.models.user import User
 
 

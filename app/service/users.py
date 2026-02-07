@@ -1,6 +1,6 @@
 from app.models.roles import UserRole
 from app.models.user import User
-from app.repository.users import UserRepository
+from app.repository.users_repository import UserRepository
 
 
 class UserService:

@@ -2,8 +2,8 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_async_session
-from app.repository.photos import PhotoRepository
-from app.repository.users import UserRepository
+from app.repository.photos_repository import PhotoRepository
+from app.repository.users_repository import UserRepository
 
 
 def get_user_repository(
