@@ -85,5 +85,5 @@ async def delete_photo(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.get("/search", response_model=list[PhotoRead])
-async def search_photo(keyword: str | None = Query(default=None), user_id: int | None = Query(default=None), date_order: str | None = Query(default=None, regex="^(asc|desc)$"), current_user: User = Depends(get_current_user), service: PhotoService = Depends(get_photo_service)):
-    return await service.search_photos(current_user=current_user, keyword=keyword, user_id=user_id, date_order=date_order)
+async def search_photo(keyword: str | None = Query(default=None), tag: str | None = Query(default=None), user_id: int | None = Query(default=None), date_order: str | None = Query(default=None, regex="^(asc|desc)$"), current_user: User = Depends(get_current_user), service: PhotoService = Depends(get_photo_service)):
+    return await service.search_photos(current_user=current_user, tag=tag, keyword=keyword, user_id=user_id, date_order=date_order)
