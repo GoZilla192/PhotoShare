@@ -41,7 +41,7 @@ class ShareService:
 
         # сформувати URL трансформованого зображення (Cloudinary)
         transformed_url = self.cloudinary.build_transformed_url(
-            public_id=photo.photo_unique_url,
+            public_id=photo.cloudinary_public_id,
             params=transform_params,
         )
         transformation_str = json.dumps(transform_params, ensure_ascii=False)

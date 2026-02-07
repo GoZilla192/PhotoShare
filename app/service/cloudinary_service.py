@@ -10,7 +10,7 @@ import cloudinary.utils
 from app.settings import Settings
 
 
-class CloudinaryTransformError:
+class CloudinaryTransformError(Exception):
     pass
 
 @dataclass(frozen=True)
@@ -31,7 +31,7 @@ class CloudinaryService:
             api_secret=settings.CLOUDINARY_API_SECRET,
             secure=True,
         )
-        PRESETS: dict[str, TransformPreset] = {
+        self.PRESETS: dict[str, TransformPreset] = {
             "thumb_300": TransformPreset("thumb_300", {"width": 300, "height": 300, "crop": "fill"}),
             "grayscale": TransformPreset("grayscale", {"effect": "grayscale"}),
             "sepia": TransformPreset("sepia", {"effect": "sepia"}),
