@@ -10,7 +10,10 @@ class UserRepository(BaseRepository):
         return await self.session.get(User, user_id)
 
     async def get_first_user_id(self) -> int | None:
-        return await self.session.get(User, 1)
+        res = await self.session.execute(
+            select(User.id).order_by(User.id.asc()).limit(1)
+        )
+        return res.scalar_one_or_none()
 
     async def get_by_username(self, username: str) -> User | None:
         res = await self.session.execute(
@@ -61,6 +64,10 @@ class UserRepository(BaseRepository):
                 .returning(User.id))
 
         res = await self.session.execute(stmt)
+        return bool(res.scalar_one_or_none())
+
+    async def exists_any(self) -> bool:
+        res = await self.session.execute(select(User.id).limit(1))
         return bool(res.scalar_one_or_none())
 
 
