@@ -1,11 +1,9 @@
-# app/dependencies.py
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import AsyncIterator, Annotated
+from typing import AsyncIterator
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_async_session
@@ -19,6 +17,7 @@ from app.repository.transformed_images_repository import TransformedImageReposit
 from app.repository.users_repository import UserRepository
 
 # services (domain)
+from app.service.users import UserService
 from app.service.photos_service import PhotoService
 from app.service.tagging_service import TaggingService
 from app.service.rating_service import RatingService
@@ -29,10 +28,12 @@ from app.service.cloudinary_service import CloudinaryService
 
 # auth canonical
 from app.auth.service import AuthService
+
 from app.settings import Settings
 
 
 # --- Settings -----------------------------------------------------------------
+@lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()
 
@@ -44,84 +45,85 @@ async def get_session() -> AsyncIterator[AsyncSession]:
 
 # --- Repositories --------------------------------------------------------------
 
-def users_repo(session: AsyncSession) -> UserRepository:
+def users_repo(session: AsyncSession = Depends(get_session)) -> UserRepository:
     return UserRepository(session)
 
-def photos_repo(session: AsyncSession) -> PhotoRepository:
+def photos_repo(session: AsyncSession = Depends(get_session)) -> PhotoRepository:
     return PhotoRepository(session)
 
-def tags_repo(session: AsyncSession) -> TagRepository:
+def tags_repo(session: AsyncSession = Depends(get_session)) -> TagRepository:
     return TagRepository(session)
 
-def ratings_repo(session: AsyncSession) -> RatingRepository:
+def ratings_repo(session: AsyncSession = Depends(get_session)) -> RatingRepository:
     return RatingRepository(session)
 
-def comments_repo(session: AsyncSession) -> CommentRepository:
+def comments_repo(session: AsyncSession = Depends(get_session)) -> CommentRepository:
     return CommentRepository(session)
 
-def public_links_repo(session: AsyncSession) -> PublicLinkRepository:
+def public_links_repo(session: AsyncSession = Depends(get_session)) -> PublicLinkRepository:
     return PublicLinkRepository(session)
 
-def transformed_images_repo(session: AsyncSession) -> TransformedImageRepository:
+def transformed_images_repo(session: AsyncSession = Depends(get_session)) -> TransformedImageRepository:
     return TransformedImageRepository(session)
 
-def token_blacklist_repo(session: AsyncSession) -> TokenBlacklistRepository:
+def token_blacklist_repo(session: AsyncSession = Depends(get_session)) -> TokenBlacklistRepository:
     return TokenBlacklistRepository(session)
 
 
 # --- Infra services (Cloudinary / QR) -----------------------------------------
 
-def cloudinary_service(settings: Settings) -> CloudinaryService:
+def cloudinary_service(settings: Settings = Depends(get_settings)) -> CloudinaryService:
     # ВАЖЛИВО: CloudinaryService має працювати від settings (api_key/secret/cloud_name тощо)
     return CloudinaryService(settings)
-
-CloudinaryServiceDep = Annotated[CloudinaryService, Depends(cloudinary_service)]
-
 
 def qr_service() -> QrService:
     return QrService()
 
-QrServiceDep = Annotated[QrService, Depends(qr_service)]
-
-
 # --- Domain services -----------------------------------------------------------
+def user_service(
+    session: AsyncSession = Depends(get_session),
+    user_repo: UserRepository = Depends(users_repo),
+    photo_repo: PhotoRepository = Depends(photos_repo),
+) -> UserService:
+    return UserService(session=session, photos_repo=photo_repo, users_repo=user_repo)
+
 
 def photo_service(
-    session: AsyncSession,
-    repo: PhotoRepository,
-    cloud: CloudinaryServiceDep,
+    session: AsyncSession = Depends(get_session),
+    repo: PhotoRepository = Depends(photos_repo),
+    cloud: CloudinaryService = Depends(cloudinary_service),
 ) -> PhotoService:
     return PhotoService(session=session, photos_repo=repo, cloudinary_client=cloud)
 
 def tagging_service(
-    session: AsyncSession,
-    photo_repo: PhotoRepository,
-    tag_repo: TagRepository,
+    session: AsyncSession = Depends(get_session),
+    photo_repo: PhotoRepository = Depends(photos_repo),
+    tag_repo: TagRepository = Depends(tags_repo),
 ) -> TaggingService:
     return TaggingService(session=session, photos_repo=photo_repo, tags_repo=tag_repo)
 
 
 def rating_service(
-    session: AsyncSession,
-    ratings: RatingRepository,
-    photos: PhotoRepository,
+    session: AsyncSession = Depends(get_session),
+    ratings: RatingRepository = Depends(ratings_repo),
+    photos: PhotoRepository = Depends(photos_repo),
 ) -> RatingService:
     return RatingService(session=session, ratings_repo=ratings, photos_repo=photos)
 
 def comment_service(
-    session: AsyncSession,
-    comments: CommentRepository,
-    photos: PhotoRepository,
+    session: AsyncSession = Depends(get_session),
+    comments: CommentRepository = Depends(comments_repo),
+    photos: PhotoRepository = Depends(photos_repo),
 ) -> CommentService:
     return CommentService(session=session, comment_repo=comments, photos_repo=photos)
 
 def share_service(
-    session: AsyncSession,
-    photos: PhotoRepository,
-    transformed: TransformedImageRepository,
-    links: PublicLinkRepository,
-    cloud: CloudinaryServiceDep,
-    qr_maker: QrServiceDep,
+    session: AsyncSession = Depends(get_session),
+    photos: PhotoRepository = Depends(photos_repo),
+    transformed: TransformedImageRepository = Depends(transformed_images_repo),
+    links: PublicLinkRepository = Depends(public_links_repo),
+    cloud: CloudinaryService = Depends(cloudinary_service),
+    qr_maker: QrService = Depends(qr_service),
 ) -> ShareService:
     return ShareService(
         session=session,
@@ -134,11 +136,10 @@ def share_service(
 
 # --- Auth (canonical: app/auth/* only) ----------------------------------------
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")  # поправ під твій роут
-
 def auth_service(
-    users: UserRepository,
-    blacklist: TokenBlacklistRepository,
+    users: UserRepository = Depends(users_repo),
+    blacklist: TokenBlacklistRepository = Depends(token_blacklist_repo),
+    settings: Settings = Depends(get_settings)
 ) -> AuthService:
-    return AuthService(users=users, blacklist=blacklist)
+    return AuthService(users=users, blacklist=blacklist, settings=settings)
 

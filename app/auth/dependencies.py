@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.security import decode_token
 from app.dependency.dependencies import get_session
 from app.repository.token_repository import TokenBlacklistRepository
 from app.repository.users_repository import UserRepository
-from app.service.security import oauth2_scheme
 
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")  # поправ під твій роут
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -45,4 +47,3 @@ def require_admin(user = Depends(get_current_user)):
     if getattr(user, "role", None) != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
     return user
-
