@@ -1,49 +1,50 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
-from sqlalchemy.ext.asyncio import AsyncSession
+from __future__ import annotations
 
-from app.database.db import get_async_session
-from app.schemas.auth import RegisterRequest, LoginRequest
-from app.service.auth import AuthService
-from app.service.security import SecurityService
-from app.repository.users_repository import UserRepository
-from app.exceptions import InactiveUserError, InvalidCredentialsError
-from app.dependency.auth import get_auth_service
+from fastapi import APIRouter, Depends, Header, HTTPException, status
+
+from app.auth.service import AuthService
+from app.dependency.dependencies import auth_service as get_auth_service
+
+from app.schemas.auth_schema import RegisterRequest, LoginRequest
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
+
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register_user(data: RegisterRequest, auth_service: AuthService = Depends(get_auth_service),):
-    security = SecurityService()
-    password_hash = security.hash_password(data.password)
-    user = await auth_service.register_user(username=data.username, email=data.email, password_hash=password_hash)
-    access_token = security.create_access_token(data={"sub": str(user.id), "role": user.role.value})
-    return {"access_token": access_token, "token_type": "bearer"}
+async def register_user(
+    data: RegisterRequest,
+    auth: AuthService = Depends(get_auth_service),
+):
+    """
+    Register new user.
+    - First user may become admin (handled in AuthService).
+    - Returns access_token.
+    """
+    token = await auth.register(**data.model_dump())
+    return {"access_token": token, "token_type": "bearer"}
 
 
 @router.post("/login")
-async def login_user(data: LoginRequest, auth_service: AuthService = Depends(get_auth_service)):
-    try:
-        user = await auth_service.login_user(email=data.email, password=data.password)
-    except InvalidCredentialsError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    except InactiveUserError:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is inactive")
-
-    security = SecurityService()
-    access_token = security.create_access_token(data={"sub": str(user.id), "role": user.role.value})
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
-@router.post("/logout", status_code=status.HTTP_501_NOT_IMPLEMENTED)
-async def logout(authorization: str | None = Header(default=None, alias="Authorization")):
+async def login_user(
+    data: LoginRequest,
+    auth: AuthService = Depends(get_auth_service),
+):
     """
-    Logout (stub)
+    Login user and return access_token.
+    AuthService handles password validation, inactive user, etc.
+    """
+    token = await auth.login(**data.model_dump())
+    return {"access_token": token, "token_type": "bearer"}
 
-    TODO:
-    - Parse Bearer token
-    - Decode JWT, extract jti + exp
-    - Add jti to blacklist until exp
-    - Ensure auth dependency checks blacklist on every request
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout_user(
+    authorization: str | None = Header(default=None, alias="Authorization"),
+    auth: AuthService = Depends(get_auth_service),
+):
+    """
+    Logout = blacklist current token JTI until exp.
+    Requires Authorization: Bearer <token>.
     """
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(
@@ -51,6 +52,7 @@ async def logout(authorization: str | None = Header(default=None, alias="Authori
             detail="Missing or invalid Authorization header (expected 'Bearer <token>')",
         )
 
-    # token = authorization.split(" ", 1)[1].strip()
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+    token = authorization.split(" ", 1)[1].strip()
+    await auth.logout(token)
+    return None
 
