@@ -1,7 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
-from app.models import UserRole  # як у вас зараз імпортується enum
+from app.models import UserRole
 
 
 class UserPublicProfile(BaseModel):

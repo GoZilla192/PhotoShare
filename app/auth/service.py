@@ -25,7 +25,7 @@ class AuthService:
         self.blacklist = blacklist
         self.settings = settings
 
-    async def register(self, *, username: str, email: str, password: str) -> User:
+    async def register(self, *, username: str, email: str, password: str) -> str:
         if await self.users.get_by_email(email):
             raise ConflictError("Email already registered")
         if await self.users.get_by_username(username):
@@ -42,8 +42,9 @@ class AuthService:
             is_active=True,
         )
 
-        # repo: add + flush; commit буде зовні
-        return await self.users.add(user)
+        user = await self.users.add(user)
+        token = create_access_token(user_id=user.id, role=user.role, settings=self.settings)
+        return token
 
     async def login(self, *, email: str, password: str) -> str:
         user = await self.users.get_by_email(email)

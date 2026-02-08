@@ -55,7 +55,7 @@ class PhotoService:
 
     async def get_photo_by_unique_url(self, unique_url: str) -> Photo:
         photo = await self.photos.get_by_unique_url(unique_url)
-        if photo:
+        if not photo:
             raise NotFoundError("Photo not found")
         return photo
 

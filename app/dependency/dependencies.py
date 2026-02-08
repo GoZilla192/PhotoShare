@@ -17,7 +17,7 @@ from app.repository.transformed_images_repository import TransformedImageReposit
 from app.repository.users_repository import UserRepository
 
 # services (domain)
-from app.service.users import UserService
+from app.service.users_service import UserService
 from app.service.photos_service import PhotoService
 from app.service.tagging_service import TaggingService
 from app.service.rating_service import RatingService
