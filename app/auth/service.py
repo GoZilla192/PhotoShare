@@ -7,6 +7,7 @@ from app.models import User, UserRole
 from app.models.token_blacklist import TokenBlacklist
 from app.repository.token_repository import TokenBlacklistRepository
 from app.repository.users_repository import UserRepository
+from app.settings import Settings
 
 
 class AuthError(Exception): ...
@@ -16,9 +17,13 @@ class InactiveUserError(AuthError): ...
 
 
 class AuthService:
-    def __init__(self, users: UserRepository, blacklist: TokenBlacklistRepository):
+    def __init__(self,
+                 users: UserRepository,
+                 blacklist: TokenBlacklistRepository,
+                 settings: Settings):
         self.users = users
         self.blacklist = blacklist
+        self.settings = settings
 
     async def register(self, *, username: str, email: str, password: str) -> User:
         if await self.users.get_by_email(email):
@@ -40,7 +45,7 @@ class AuthService:
         # repo: add + flush; commit буде зовні
         return await self.users.add(user)
 
-    async def login(self, *, email: str, password: str) -> dict:
+    async def login(self, *, email: str, password: str) -> str:
         user = await self.users.get_by_email(email)
         if not user:
             raise InvalidCredentialsError("Invalid credentials")
@@ -50,13 +55,13 @@ class AuthService:
             raise InvalidCredentialsError("Invalid credentials")
 
         # повертаємо пакет який очікує router/schemas
-        token_pack = create_access_token(subject=str(user.id), role=user.role.value)
-        return token_pack
+        token = create_access_token(user_id=user.id, role=user.role, settings=self.settings)
+        return token
 
     async def logout(self, token: str) -> None:
         # якщо токен невалідний/прострочений — logout no-op
         try:
-            payload = decode_token(token)
+            payload = decode_token(token=token, settings=self.settings)
         except Exception:
             return
 
