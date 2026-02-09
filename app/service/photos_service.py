@@ -87,8 +87,8 @@ class PhotoService:
             except Exception:
                 pass
 
-    async def list_by_user(self, user_id: int) -> list[Photo]:
-        return await self.photos.list_by_user(user_id)
+    async def list_by_user(self, user_id: int, *, limit: int = 50, offset: int = 0) -> list[Photo]:
+        return await self.photos.list_by_user(user_id=user_id, limit=limit, offset=offset)
 
     async def count_by_user(self, user_id: int) -> int:
         return await self.photos.count_by_user(user_id)

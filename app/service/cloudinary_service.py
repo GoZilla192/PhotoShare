@@ -13,10 +13,12 @@ from app.settings import Settings
 class CloudinaryTransformError(Exception):
     pass
 
+
 @dataclass(frozen=True)
 class TransformPreset:
     name: str
     params: dict
+
 
 class CloudinaryService:
     """
@@ -85,3 +87,20 @@ class CloudinaryService:
             raise CloudinaryTransformError(f"Unknown preset: {preset}")
 
         return self.build_transformed_url(public_id=public_id, params=p.params)
+
+    def build_transform_params(req: TransformRequest) -> dict:
+        match req.preset:
+            case "thumb":
+                return {"c": "fill", "w": req.width or 256, "h": req.height or 256}
+            case "fit":
+                return {"c": "fit", "w": req.width or 1024, "h": req.height or 1024}
+            case "crop":
+                return {"c": "crop", "g": "center", "w": req.width or 800, "h": req.height or 800}
+            case "grayscale":
+                return {"e": "grayscale"}
+            case "sepia":
+                return {"e": "sepia"}
+            case "blur":
+                return {"e": f"blur:{req.blur or 100}"}
+            case "rotate":
+                return {"a": req.angle or 90}
