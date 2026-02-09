@@ -8,17 +8,16 @@ import cloudinary.uploader
 import cloudinary.utils
 
 from app.core.settings import Settings
-
-
-class CloudinaryTransformError(Exception):
-    pass
+from app.schemas.share_schema import TransformRequest
 
 
 @dataclass(frozen=True)
-class TransformPreset:
-    name: str
-    params: dict
-
+class CloudinaryPreset:
+    crop: str | None = None
+    width: int | None = None
+    height: int | None = None
+    effect: str | None = None
+    angle: int | None = None
 
 class CloudinaryService:
     """
@@ -33,15 +32,8 @@ class CloudinaryService:
             api_secret=settings.CLOUDINARY_API_SECRET,
             secure=True,
         )
-        self.PRESETS: dict[str, TransformPreset] = {
-            "thumb_300": TransformPreset("thumb_300", {"width": 300, "height": 300, "crop": "fill"}),
-            "grayscale": TransformPreset("grayscale", {"effect": "grayscale"}),
-            "sepia": TransformPreset("sepia", {"effect": "sepia"}),
-            "blur": TransformPreset("blur", {"effect": "blur:300"}),
-            "rotate_90": TransformPreset("rotate_90", {"angle": 90}),
-        }
 
-    def upload_photo(self, file: Any, *, folder: str = "photoshare") -> dict[str, str]:
+    def upload_photo(self, file: bytes, folder: str = "photoshare") -> dict[str, Any]:
         """
         Upload file-like object or bytes to Cloudinary.
         Returns: {"url": "...", "public_id": "..."}
@@ -64,43 +56,29 @@ class CloudinaryService:
         if result.get("result") not in {"ok", "not found"}:
             raise RuntimeError(f"Cloudinary delete failed: {result}")
 
-    def build_transformed_url(self, *, public_id: str, params: dict) -> str:
+    def build_transformed_url(self, public_id: str, params: dict[str, Any]) -> str:
         """
         Build a Cloudinary URL for a public_id with transformations.
         params example: {"width": 400, "height": 400, "crop": "fill", "effect": "grayscale"}
         """
-        # Cloudinary expects transformations as keyword args.
-        # We force secure=True so it's https.
-        url, _ = cloudinary.utils.cloudinary_url(
-            public_id,
-            secure=True,
-            **params,
-        )
+        url, _ = cloudinary.utils.cloudinary_url(public_id, transformation=[params] if params else None)
         return url
 
-    def get_allowed_presets(self) -> list[str]:
-        return list(self.PRESETS.keys())
+def build_transform_params(req: TransformRequest) -> dict[str, Any]:
+    """
+    Convert API TransformRequest into Cloudinary transformation dict.
+    Cloudinary Python SDK expects keys like: crop/width/height/effect/angle, etc.
+    """
+    params: dict[str, Any] = {}
+    if req.crop:
+        params["crop"] = req.crop
+    if req.width is not None:
+        params["width"] = req.width
+    if req.height is not None:
+        params["height"] = req.height
+    if req.effect:
+        params["effect"] = req.effect
+    if req.angle is not None:
+        params["angle"] = req.angle
+    return params
 
-    def build_transformed_url_preset(self, *, public_id: str, preset: str) -> str:
-        p = self.PRESETS.get(preset)
-        if not p:
-            raise CloudinaryTransformError(f"Unknown preset: {preset}")
-
-        return self.build_transformed_url(public_id=public_id, params=p.params)
-
-    def build_transform_params(req: TransformRequest) -> dict:
-        match req.preset:
-            case "thumb":
-                return {"c": "fill", "w": req.width or 256, "h": req.height or 256}
-            case "fit":
-                return {"c": "fit", "w": req.width or 1024, "h": req.height or 1024}
-            case "crop":
-                return {"c": "crop", "g": "center", "w": req.width or 800, "h": req.height or 800}
-            case "grayscale":
-                return {"e": "grayscale"}
-            case "sepia":
-                return {"e": "sepia"}
-            case "blur":
-                return {"e": f"blur:{req.blur or 100}"}
-            case "rotate":
-                return {"a": req.angle or 90}

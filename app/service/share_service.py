@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import json
 import uuid as uuidlib
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
@@ -35,7 +36,7 @@ class ShareService:
         if not photo:
             raise NotFoundError("Photo not found")
         # авторизацію тут “умовно пропускаємо”, але мінімум:
-        # owner/admin (або будь-який залогінений — як вирішите)
+        # owner/admin (або будь-який залогінений — дискусійно)
         # if photo.user_id != current_user.id and current_user.role != UserRole.admin:
         #     raise PermissionDeniedError("Insufficient permissions")
 

@@ -4,8 +4,6 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 
-# --- Requests -----------------------------------------------------------------
-
 class PhotoUploadRequest(BaseModel):
     """
     Payload for upload endpoint (metadata only).
@@ -17,8 +15,6 @@ class PhotoUploadRequest(BaseModel):
 class PhotoUpdateDescriptionRequest(BaseModel):
     description: str | None = Field(default=None, max_length=500)
 
-
-# --- Responses ----------------------------------------------------------------
 
 class PhotoRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -43,6 +39,6 @@ class PhotoListResponse(BaseModel):
     Якщо не треба — можна не використовувати.
     """
     items: list[PhotoRead]
-    total: int
-    limit: int
-    offset: int
+    total: int | None = None
+    limit: int | None = None
+    offset: int| None = None

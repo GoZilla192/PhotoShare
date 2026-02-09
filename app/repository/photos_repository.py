@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from sqlalchemy import select, update, delete, func
+from datetime import datetime
+from sqlalchemy import select, update, delete, func, and_
+from app.models import PhotoTag, Tag, Rating
 from app.models.photo import Photo
 from app.repository.base_repository import BaseRepository
 
@@ -8,7 +10,6 @@ from app.repository.base_repository import BaseRepository
 class PhotoRepository(BaseRepository):
     async def add(self, photo: Photo) -> Photo:
         self.session.add(photo)
-        await self.session.flush()
         return photo
 
     async def get_by_id(self, photo_id: int) -> Photo | None:
@@ -49,3 +50,133 @@ class PhotoRepository(BaseRepository):
             delete(Photo).where(Photo.id == photo_id).returning(Photo.id)
         )
         return res.scalar_one_or_none() is not None
+
+    async def search(
+            self,
+            *,
+            q: str | None = None,
+            tag: str | None = None,
+            min_rating: float | None = None,
+            date_from: datetime | None = None,
+            date_to: datetime | None = None,
+            sort: str = "newest",
+            limit: int = 50,
+            offset: int = 0,
+    ) -> list[Photo]:
+        """
+        Search photos by:
+        - keyword in description (ILIKE)
+        - tag name
+        - min avg rating
+        - created_at range
+        """
+        stmt = select(Photo)
+
+        # join tags if needed
+        if tag:
+            stmt = (
+                stmt.join(PhotoTag, PhotoTag.photo_id == Photo.id)
+                .join(Tag, Tag.id == PhotoTag.tag_id)
+            )
+
+        # ratings join for avg
+        if min_rating is not None or sort in {"top", "low"}:
+            stmt = stmt.outerjoin(Rating, Rating.photo_id == Photo.id)
+
+        conditions = []
+        if q:
+            like = f"%{q.strip()}%"
+            conditions.append(Photo.description.ilike(like))
+        if tag:
+            norm_tag = tag.strip().lower()
+            conditions.append(Tag.name == norm_tag)
+        if date_from:
+            conditions.append(Photo.created_at >= date_from)
+        if date_to:
+            conditions.append(Photo.created_at <= date_to)
+
+        if conditions:
+            stmt = stmt.where(and_(*conditions))
+
+        # group/having for avg rating filter
+        if min_rating is not None or sort in {"top", "low"}:
+            avg_rating = func.coalesce(func.avg(Rating.value), 0.0)
+            stmt = stmt.group_by(Photo.id)
+            if min_rating is not None:
+                stmt = stmt.having(avg_rating >= float(min_rating))
+
+            # sorting by avg
+            if sort == "top":
+                stmt = stmt.order_by(avg_rating.desc(), Photo.created_at.desc())
+            elif sort == "low":
+                stmt = stmt.order_by(avg_rating.asc(), Photo.created_at.desc())
+            elif sort == "oldest":
+                stmt = stmt.order_by(Photo.created_at.asc())
+            else:
+                stmt = stmt.order_by(Photo.created_at.desc())
+        else:
+            # no ratings join
+            if sort == "oldest":
+                stmt = stmt.order_by(Photo.created_at.asc())
+            else:
+                stmt = stmt.order_by(Photo.created_at.desc())
+
+        # important: distinct to avoid duplicates when joining tags
+        stmt = stmt.distinct(Photo.id).limit(limit).offset(offset)
+
+        res = await self.session.execute(stmt)
+        return list(res.scalars().unique().all())
+
+    async def count_search(
+            self,
+            *,
+            q: str | None = None,
+            tag: str | None = None,
+            min_rating: float | None = None,
+            date_from: datetime | None = None,
+            date_to: datetime | None = None,
+    ) -> int:
+        """
+        Total count for search() with same filters.
+        """
+        stmt = select(func.count(func.distinct(Photo.id)))
+
+        # base FROM
+        stmt = stmt.select_from(Photo)
+
+        if tag:
+            stmt = (
+                stmt.join(PhotoTag, PhotoTag.photo_id == Photo.id)
+                .join(Tag, Tag.id == PhotoTag.tag_id)
+            )
+
+        if min_rating is not None:
+            stmt = stmt.outerjoin(Rating, Rating.photo_id == Photo.id)
+
+        conditions = []
+        if q:
+            like = f"%{q.strip()}%"
+            conditions.append(Photo.description.ilike(like))
+        if tag:
+            norm_tag = tag.strip().lower()
+            conditions.append(Tag.name == norm_tag)
+        if date_from:
+            conditions.append(Photo.created_at >= date_from)
+        if date_to:
+            conditions.append(Photo.created_at <= date_to)
+
+        if conditions:
+            stmt = stmt.where(and_(*conditions))
+
+        if min_rating is not None:
+            avg_rating = func.coalesce(func.avg(Rating.value), 0.0)
+            stmt = stmt.group_by(Photo.id).having(avg_rating >= float(min_rating))
+            # у такому випадку count(distinct) через group_by складніше;
+            # найнадійніше — обгорнути у підзапит:
+            subq = stmt.subquery()
+            stmt2 = select(func.count()).select_from(subq)
+            res = await self.session.execute(stmt2)
+            return int(res.scalar_one())
+
+        res = await self.session.execute(stmt)
+        return int(res.scalar_one())

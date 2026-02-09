@@ -92,8 +92,9 @@ def photo_service(
     session: AsyncSession = Depends(get_session),
     repo: PhotoRepository = Depends(photos_repo),
     cloud: CloudinaryService = Depends(cloudinary_service),
+    tag_repo: TagRepository = Depends(tags_repo),
 ) -> PhotoService:
-    return PhotoService(session=session, photos_repo=repo, cloudinary_client=cloud)
+    return PhotoService(session=session, photos_repo=repo, cloudinary_client=cloud, tags_repo=tag_repo)
 
 def tagging_service(
     session: AsyncSession = Depends(get_session),
@@ -137,9 +138,10 @@ def share_service(
 # --- Auth (canonical: app/auth/* only) ----------------------------------------
 
 def auth_service(
+    session: AsyncSession = Depends(get_session),
     users: UserRepository = Depends(users_repo),
     blacklist: TokenBlacklistRepository = Depends(token_blacklist_repo),
     settings: Settings = Depends(get_settings)
 ) -> AuthService:
-    return AuthService(users=users, blacklist=blacklist, settings=settings)
+    return AuthService(session=session, users=users, blacklist=blacklist, settings=settings)
 
