@@ -1,9 +1,8 @@
-from fastapi import HTTPException, status
 from app.models.roles import UserRole
 from app.models.user import User
 from app.repository.users_repository import UserRepository
-from app.service.security import SecurityService
-from app.exceptions import InactiveUserError, InvalidCredentialsError
+from app.legacy.security import SecurityService
+from app.core.exceptions import InactiveUserError, InvalidCredentialsError
 
 
 class AuthService:

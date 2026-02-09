@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.exceptions import NotFoundError, PermissionDeniedError
+from app.core.exceptions import NotFoundError, PermissionDeniedError
 from app.models import UserRole
 from app.repository.ratings_repository import RatingRepository
 from app.repository.photos_repository import PhotoRepository

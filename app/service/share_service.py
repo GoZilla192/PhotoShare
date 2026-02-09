@@ -3,7 +3,7 @@ import uuid as uuidlib
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.exceptions import NotFoundError, PermissionDeniedError
+from app.core.exceptions import NotFoundError
 from app.models import PublicLink
 from app.repository.photos_repository import PhotoRepository
 from app.repository.public_links_repository import PublicLinkRepository

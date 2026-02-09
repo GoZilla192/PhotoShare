@@ -1,10 +1,10 @@
 from fastapi import Depends
 
-from app.dependency.repository import get_photo_repository
+from app.legacy.repository import get_photo_repository
 from app.models.user import User
 from app.repository.photos_repository import PhotoRepository
 from app.service.photos_service import PhotoService
-from app.service.security import SecurityService
+from app.legacy.security import SecurityService
 
 
 def get_security_service() -> SecurityService:

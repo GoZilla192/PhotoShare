@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.exceptions import NotFoundError, PermissionDeniedError
+from app.core.exceptions import NotFoundError, PermissionDeniedError
 from app.models.roles import UserRole
 from app.models.user import User
 from app.repository.photos_repository import PhotoRepository

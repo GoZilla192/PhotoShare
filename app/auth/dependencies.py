@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,7 +8,7 @@ from app.auth.security import decode_token
 from app.dependency.dependencies import get_session, get_settings
 from app.repository.token_repository import TokenBlacklistRepository
 from app.repository.users_repository import UserRepository
-from app.settings import Settings
+from app.core.settings import Settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")  # поправ під твій роут
 

@@ -29,7 +29,7 @@ from app.service.cloudinary_service import CloudinaryService
 # auth canonical
 from app.auth.service import AuthService
 
-from app.settings import Settings
+from app.core.settings import Settings
 
 
 # --- Settings -----------------------------------------------------------------

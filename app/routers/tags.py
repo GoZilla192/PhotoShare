@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.dependency.dependencies import tags_repo as get_tags_repo
 from app.repository.tags_repository import TagRepository
-from app.schemas.tag import TagOut
+from app.schemas.tag_schema import TagOut
 
 router = APIRouter(prefix="/tags", tags=["Tags"])
 

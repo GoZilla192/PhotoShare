@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Response, status, UploadFile, File, Form, Query
 
 import uuid
-from app.dependency.service import get_current_user, get_photo_service
-from app.exceptions import NotFoundError, PermissionDeniedError
+from app.legacy.service import get_current_user, get_photo_service
+from app.core.exceptions import NotFoundError, PermissionDeniedError
 from app.models.user import User
-from app.schemas.photo import PhotoCreate, PhotoRead, PhotoUpdateDescription
+from app.schemas.photo_schema import PhotoCreate, PhotoRead, PhotoUpdateDescription, PhotoListResponse
 from app.service.photos_service import PhotoService
 
 
