@@ -7,7 +7,7 @@ from app.models import User, UserRole
 from app.models.token_blacklist import TokenBlacklist
 from app.repository.token_repository import TokenBlacklistRepository
 from app.repository.users_repository import UserRepository
-from app.settings import Settings
+from app.core.settings import Settings
 
 
 class AuthError(Exception): ...

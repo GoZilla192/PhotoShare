@@ -1,7 +1,7 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.settings import Settings
+from app.core.settings import Settings
 
 def _get_database_url() -> str:
     database_url = Settings().database_url

@@ -1,4 +1,3 @@
-# app/auth/security.py
 from __future__ import annotations
 
 import uuid
@@ -8,7 +7,7 @@ from jose import jwt, JWTError,  ExpiredSignatureError
 from jose.exceptions import JWEInvalidAuth
 from passlib.context import CryptContext
 
-from app.settings import Settings  # SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from app.core.settings import Settings  # SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

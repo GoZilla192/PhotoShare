@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException, status
 
-from app.dependency.service import get_current_user
+from app.legacy.service import get_current_user
 from app.models.roles import UserRole
 from app.models.user import User
 

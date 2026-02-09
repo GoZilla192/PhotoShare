@@ -7,7 +7,7 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.utils
 
-from app.settings import Settings
+from app.core.settings import Settings
 
 
 class CloudinaryTransformError(Exception):

@@ -9,10 +9,13 @@ from app.dependency.dependencies import (
     rating_service as get_rating_service,
     share_service as get_share_service,
 )
-from app.exceptions import NotFoundError, PermissionDeniedError
+from app.legacy.service import get_photo_service
+from app.core.exceptions import NotFoundError, PermissionDeniedError
 from app.schemas.rating_schema import RatingResponse, RatingSetRequest
-from app.schemas.share_schema import ShareCreateRequest, ShareCreateResponse
-from app.schemas.tag import PhotoTagsReadResponse, PhotoTagsSetRequest
+from app.schemas.share_schema import ShareCreateRequest, ShareCreateResponse, TransformRequest
+from app.schemas.tag_schema import PhotoTagsReadResponse, PhotoTagsSetRequest
+from app.service.cloudinary_service import CloudinaryService
+from app.service.photos_service import PhotoService
 
 from app.service.tagging_service import TaggingService
 from app.service.rating_service import RatingService

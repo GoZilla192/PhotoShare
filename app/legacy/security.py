@@ -9,7 +9,7 @@ from typing import List
 from app.database.db import get_async_session
 from app.repository.users_repository import UserRepository
 from app.models.roles import UserRole
-from app.settings import Settings
+from app.core.settings import Settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
