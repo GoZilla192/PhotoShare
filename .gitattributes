@@ -1,0 +1,7 @@
+# Keep source files with LF in repo (safe cross-platform)
+*.py text eol=lf
+*.pyi text eol=lf
+*.sql text eol=lf
+*.env text eol=lf
+*.md text eol=lf
+alembic/versions/*.py text eol=lf

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
+from app.auth.dependencies import get_current_user, oauth2_scheme
 from app.auth.service import AuthService
-from app.dependency.dependencies import auth_service as get_auth_service
+from app.dependency.dependencies import auth_service as get_auth_service, auth_service
+from app.models import User
 
 from app.schemas.auth_schema import RegisterRequest, LoginRequest
 
@@ -39,20 +41,14 @@ async def login_user(
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout_user(
-    authorization: str | None = Header(default=None, alias="Authorization"),
-    auth: AuthService = Depends(get_auth_service),
+        current_user: User = Depends(get_current_user),
+        token: str = Depends(oauth2_scheme),  # <- беремо поточний bearer токен
+        auth: AuthService = Depends(auth_service),
 ):
     """
     Logout = blacklist current token JTI until exp.
     Requires Authorization: Bearer <token>.
     """
-    if not authorization or not authorization.lower().startswith("bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing or invalid Authorization header (expected 'Bearer <token>')",
-        )
-
-    token = authorization.split(" ", 1)[1].strip()
     await auth.logout(token)
-    return None
+    return
 

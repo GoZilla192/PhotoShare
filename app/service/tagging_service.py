@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError, PermissionDeniedError
@@ -33,3 +35,14 @@ class TaggingService:
 
         async with self.session.begin():
             return await self.tags.set_tags_for_photo(photo_id, tag_names, max_tags=5)
+
+    def _parse_tags_csv(self, tags: str | None) -> list[str] | None:
+        if not tags:
+            return None
+        items = [t.strip() for t in tags.split(",")]
+        items = [t for t in items if t]  # drop empty
+        if not items:
+            return None
+        # safety clamp; основний ліміт також enforced в репо/сервісі
+        return items[:5]
+

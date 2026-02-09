@@ -32,6 +32,7 @@ async def db_healthcheck() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    _ = app
     settings = get_settings()
     logger = logging.getLogger("photoshare")
 
@@ -58,7 +59,7 @@ def create_app() -> FastAPI:
 
     app = FastAPI(
         title=settings.APP_NAME,
-        version="0.1.0",
+        version="0.1.4",
     )
 
     # Роутери

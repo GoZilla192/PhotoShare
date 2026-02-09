@@ -17,7 +17,6 @@ class Photo(Base, CreatedAtMixin, UpdatedAtMixin):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
     photo_unique_url: Mapped[str] = mapped_column(nullable=False, unique=True) # unique url on photo
-    photo_url: Mapped[str] = mapped_column(nullable=False) # path to photo on OS
     cloudinary_public_id: Mapped[str] = mapped_column(nullable=True)
     description: Mapped[str | None] = mapped_column(nullable=True)
 

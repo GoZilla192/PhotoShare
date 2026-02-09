@@ -10,7 +10,7 @@ from app.repository.token_repository import TokenBlacklistRepository
 from app.repository.users_repository import UserRepository
 from app.core.settings import Settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")  # поправ під твій роут
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),

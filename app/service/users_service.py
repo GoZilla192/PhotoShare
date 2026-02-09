@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import PermissionDeniedError, ConflictError, NotFoundError
 from app.models.user import User
 from app.models.roles import UserRole
 from app.repository.users_repository import UserRepository
@@ -12,19 +13,6 @@ from app.schemas.user_profile_shema import (
     UserMeUpdateRequest,
     UserBanResponse,
 )
-
-
-class NotFoundError(Exception):
-    pass
-
-
-class ConflictError(Exception):
-    pass
-
-
-class PermissionDeniedError(Exception):
-    pass
-
 
 class UserService:
     def __init__(
