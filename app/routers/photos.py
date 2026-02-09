@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, UploadFile, File, Form
 
+import uuid
 from app.dependency.service import get_current_user, get_photo_service
 from app.exceptions import NotFoundError, PermissionDeniedError
 from app.models.user import User
@@ -12,17 +13,34 @@ router = APIRouter(prefix="/photos", tags=["photos"])
 
 @router.post("", response_model=PhotoRead, status_code=status.HTTP_201_CREATED)
 async def upload_photo(
-    payload: PhotoCreate,
+    file: UploadFile = File(...),
+    description: str | None = Form(default=None),
     current_user: User = Depends(get_current_user),
     photo_service: PhotoService = Depends(get_photo_service),
 ) -> PhotoRead:
-    photo = await photo_service.create_photo(
-        user_id=current_user.id,
-        photo_url=payload.photo_url,
-        photo_unique_url=payload.photo_unique_url,
-        description=payload.description,
-    )
-    return photo
+    photo_unique_url = uuid.uuid4().hex
+    try:
+        return await photo_service.create_photo(
+            user_id=current_user.id,
+            file=file,
+            photo_unique_url=photo_unique_url,
+            description=description,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.get("/{photo_id}", response_model=PhotoRead)
+async def get_photo_by_id(
+    photo_id: int,
+    photo_service: PhotoService = Depends(get_photo_service),
+) -> PhotoRead:
+    try:
+        return await photo_service.get_photo(photo_id)
+    except NotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
 
 @router.get("/by-unique/{photo_unique_url}", response_model=PhotoRead)
@@ -37,6 +55,33 @@ async def get_photo_by_unique_url(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
         ) from exc
+
+# --- Lists for UI -------------------------------------------------------------
+
+
+@router.get("/me/list", response_model=PhotoListResponse)
+async def list_my_photos(
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    current_user: User = Depends(get_current_user),
+    photo_service: PhotoService = Depends(get_photo_service),
+) -> PhotoListResponse:
+    items = await photo_service.list_by_user(current_user.id, limit=limit, offset=offset)
+    total = await photo_service.count_by_user(current_user.id)
+    return PhotoListResponse(items=items, total=total, limit=limit, offset=offset)
+
+
+@router.get("/user/{user_id}/list", response_model=PhotoListResponse)
+async def list_user_photos(
+    user_id: int,
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    photo_service: PhotoService = Depends(get_photo_service),
+) -> PhotoListResponse:
+    # Публічний список фото користувача для профілю (UI).
+    items = await photo_service.list_by_user(user_id, limit=limit, offset=offset)
+    total = await photo_service.count_by_user(user_id)
+    return PhotoListResponse(items=items, total=total, limit=limit, offset=offset)
 
 
 @router.put("/{photo_id}/description", response_model=PhotoRead)

@@ -1,12 +1,28 @@
 from pydantic import BaseModel, Field
+from enum import Enum
 
 
 class ShareCreateRequest(BaseModel):
-    transformation: str | None = Field(default=None, description="Transformation preset or params string")
+    transform_params: dict = Field(default_factory=dict)
 
 
 class ShareCreateResponse(BaseModel):
     uuid: str
-    public_url: str
-    qr_code_url: str | None = None
-    transformed_image_url: str | None = None
+
+
+class TransformPreset(str, Enum):
+    thumb = "thumb"
+    fit = "fit"
+    crop = "crop"
+    grayscale = "grayscale"
+    sepia = "sepia"
+    blur = "blur"
+    rotate = "rotate"
+
+
+class TransformRequest(BaseModel):
+    preset: TransformPreset
+    width: int | None = Field(default=None, ge=32, le=2000)
+    height: int | None = Field(default=None, ge=32, le=2000)
+    blur: int | None = Field(default=None, ge=1, le=200)     # лише для blur
+    angle: int | None = Field(default=None, ge=-360, le=360)  # лише для rotate
