@@ -70,5 +70,14 @@ class UserRepository(BaseRepository):
         res = await self.session.execute(select(User.id).limit(1))
         return bool(res.scalar_one_or_none())
 
+    async def list_users(self, *, limit: int = 200, offset: int = 0) -> list[User]:
+        res = await self.session.execute(
+            select(User)
+            .order_by(User.id.asc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return list(res.scalars().unique().all())
+
 
 

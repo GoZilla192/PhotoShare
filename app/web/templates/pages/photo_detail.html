@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Photo #{{ photo.id if photo is defined else "" }} — PhotoShare{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row g-3">
+
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">
+            Photo #{{ photo.id }}
+          </span>
+          <a class="btn btn-sm btn-outline-secondary" href="/ui/">Back</a>
+        </div>
+
+        <div class="card-body">
+          {# Поки без реального URL з Cloudinary: залишаємо placeholder #}
+          <div class="ratio ratio-16x9 bg-body-tertiary rounded-3 mb-3"></div>
+
+          <div class="mb-3">
+            <div class="fw-semibold">Description</div>
+            <div class="text-muted">
+              {% if photo.description %}{{ photo.description }}{% else %}<em>No description</em>{% endif %}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="fw-semibold">Tags</div>
+            {% if tags is defined and tags and tags|length > 0 %}
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                {% for t in tags %}
+                  <a class="text-decoration-none" href="/ui/?tag={{ t.name|urlencode }}">
+                    <span class="badge rounded-pill text-bg-secondary">{{ t.name }}</span>
+                  </a>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-muted"><em>No tags</em></div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <div class="fw-semibold">Rating</div>
+            <div class="text-muted">
+              Avg: <span id="rating-avg-{{ photo.id }}">{{ rating.avg if rating is defined else "-" }}</span>,
+              votes: <span id="rating-count-{{ photo.id }}">{{ rating.count if rating is defined else "-" }}</span>
+            </div>
+
+            {# Поки без JS — зробимо просту форму #}
+            <form class="d-flex gap-2 mt-2" method="post" action="/ui/photos/{{ photo.id }}/rate">
+              <select class="form-select form-select-sm" name="value" style="max-width: 120px;">
+                <option value="1">1 ★</option>
+                <option value="2">2 ★</option>
+                <option value="3" selected>3 ★</option>
+                <option value="4">4 ★</option>
+                <option value="5">5 ★</option>
+              </select>
+              <button class="btn btn-sm btn-outline-primary" type="submit">Rate</button>
+            </form>
+            <div class="form-text">Later we’ll switch this to AJAX with minimal JS.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <div class="card-header fw-semibold">Comments</div>
+        <div class="card-body">
+          <form method="post" action="/ui/photos/{{ photo.id }}/comment" class="d-grid gap-2 mb-3">
+            <textarea class="form-control" name="text" rows="3" maxlength="1000" required
+                      placeholder="Write a comment..."></textarea>
+            <button class="btn btn-primary" type="submit">Add comment</button>
+          </form>
+
+          {% if comments is defined and comments and comments|length > 0 %}
+            <div class="list-group">
+              {% for c in comments %}
+                <div class="list-group-item">
+                  <div class="small text-muted">User #{{ c.user_id }} • Comment #{{ c.id }}</div>
+                  <div>{{ c.text }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-muted"><em>No comments yet.</em></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      {# owner/admin actions будемо показувати пізніше, коли додамо current_user і перевірки #}
+      <div class="card">
+        <div class="card-header fw-semibold">Actions</div>
+        <div class="card-body d-grid gap-3">
+
+          <form method="post" action="/ui/photos/{{ photo.id }}/description" class="d-grid gap-2">
+            <label class="form-label mb-0">Update description</label>
+            <textarea class="form-control" name="description" rows="2" maxlength="1000"
+                      placeholder="New description..."></textarea>
+            <button class="btn btn-sm btn-outline-secondary" type="submit">Save</button>
+          </form>
+
+          <form method="post" action="/ui/photos/{{ photo.id }}/tags" class="d-grid gap-2">
+            <label class="form-label mb-0">Update tags</label>
+            <input class="form-control" name="tags" type="text" placeholder="tag1, tag2">
+            <div class="form-text">Up to 5 tags.</div>
+            <button class="btn btn-sm btn-outline-secondary" type="submit">Save</button>
+          </form>
+
+          <form method="post" action="/ui/photos/{{ photo.id }}/delete"
+                onsubmit="return confirm('Delete this photo?');">
+            <button class="btn btn-sm btn-outline-danger w-100" type="submit">Delete photo</button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

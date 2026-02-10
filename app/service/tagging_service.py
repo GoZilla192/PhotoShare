@@ -46,3 +46,8 @@ class TaggingService:
         # safety clamp; основний ліміт також enforced в репо/сервісі
         return items[:5]
 
+    async def get_tag_cloud(self, *, limit: int = 50, offset: int = 0) -> list[dict]:
+        items = await self.tags.list_cloud(limit=limit, offset=offset)
+        # Повертаємо UI-friendly структуру, без ORM.
+        return [{"name": name, "count": count} for name, count in items]
+

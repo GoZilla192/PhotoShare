@@ -108,6 +108,10 @@ class UserService:
             target.role = role
             await self.session.flush()
 
+    async def list_users(self, *, limit: int = 200, offset: int = 0, current_user: User) -> list[User]:
+        self._require_admin(current_user)
+        return await self.users.list_users(limit=limit, offset=offset)
+
     @staticmethod
     def _require_admin(current_user: User) -> None:
         if current_user.role != UserRole.admin:

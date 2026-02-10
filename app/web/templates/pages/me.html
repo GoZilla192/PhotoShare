@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Me — PhotoShare{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header fw-semibold">My profile</div>
+        <div class="card-body">
+          <div class="h5 mb-1">@{{ profile.username if profile is defined else "" }}</div>
+          <div class="text-muted small mb-3">{{ profile.email if profile is defined else "" }}</div>
+
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge text-bg-secondary">Role: {{ profile.role if profile is defined else "-" }}</span>
+            <span class="badge text-bg-secondary">Photos: {{ profile.photos_count if profile is defined else "-" }}</span>
+            <span class="badge text-bg-secondary">
+              Active: {{ "yes" if profile is defined and profile.is_active else "no" }}
+            </span>
+          </div>
+
+          <div class="mt-4 d-flex gap-2">
+            <a class="btn btn-primary" href="/ui/photos/upload">Upload photo</a>
+            <a class="btn btn-outline-secondary" href="/ui/">Back to feed</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Transform preview — PhotoShare{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span class="fw-semibold">Transform preview</span>
+      <a class="btn btn-sm btn-outline-secondary" href="/ui/photos/{{ photo.id }}">Back</a>
+    </div>
+
+    <div class="card-body">
+      <div class="ratio ratio-16x9 bg-body-tertiary rounded-3 overflow-hidden mb-3">
+        <img src="{{ url }}" alt="Preview" class="w-100 h-100 object-fit-cover">
+      </div>
+
+      <div class="small text-muted">Params:</div>
+      <pre class="bg-body-tertiary rounded-3 p-3 small">{{ params }}</pre>
+
+      <div class="d-flex gap-2">
+        <form method="post" action="/ui/photos/{{ photo.id }}/share" class="m-0">
+          <input type="hidden" name="transform_params_json" value='{{ params | tojson }}'>
+          <button class="btn btn-primary" type="submit">Create share link with these params</button>
+        </form>
+
+        <a class="btn btn-outline-secondary" href="/ui/photos/{{ photo.id }}">Cancel</a>
+      </div>
+
+      <div class="form-text mt-2">
+        This will create a public link using the transform params above.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

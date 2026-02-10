@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Feed — PhotoShare{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row g-3">
+
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <span class="fw-semibold">Photo feed</span>
+          <span class="text-muted small">
+            {% if total is defined %}{{ total }} total{% endif %}
+          </span>
+        </div>
+
+        <div class="card-body">
+          {% if items is defined and items and items|length > 0 %}
+            <div class="d-grid gap-3">
+              {% for p in items %}
+                {% include "partials/photo_card.html" %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-muted">No photos found.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      {% include "partials/tag_cloud.html" %}
+      {% include "partials/filters_hint.html" %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
