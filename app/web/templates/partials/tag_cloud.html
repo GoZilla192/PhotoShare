@@ -1,0 +1,33 @@
+<div class="card mb-3">
+  <div class="card-header">
+    <span class="fw-semibold">Tags</span>
+  </div>
+
+  <div class="card-body">
+    {% if tag_cloud is defined and tag_cloud and tag_cloud|length > 0 %}
+      <div class="d-flex flex-wrap gap-2">
+        {% for t in tag_cloud %}
+          {% set c = t.count %}
+          {% if c >= 20 %}
+            {% set cls = "fs-6" %}
+          {% else %}
+            {% set cls = "small" %}
+          {% endif %}
+
+          <a class="text-decoration-none" href="/ui/?tag={{ t.name|urlencode }}">
+            <span class="badge rounded-pill text-bg-secondary {{ cls }}">
+              {{ t.name }}
+              <span class="opacity-75 ms-1">({{ t.count }})</span>
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+
+      <div class="mt-3">
+        <a class="btn btn-sm btn-outline-secondary" href="/ui/">Reset filters</a>
+      </div>
+    {% else %}
+      <div class="text-muted small">No tags yet.</div>
+    {% endif %}
+  </div>
+</div>

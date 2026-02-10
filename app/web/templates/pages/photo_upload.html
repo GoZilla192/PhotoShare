@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Upload — PhotoShare{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header fw-semibold">Upload photo</div>
+        <div class="card-body">
+          <form method="post" action="/ui/photos/upload" enctype="multipart/form-data" class="d-grid gap-3">
+            <div>
+              <label class="form-label">File</label>
+              <input class="form-control" type="file" name="file" accept="image/*" required>
+            </div>
+
+            <div>
+              <label class="form-label">Description</label>
+              <textarea class="form-control" name="description" rows="3" maxlength="1000"
+                        placeholder="Optional description..."></textarea>
+            </div>
+
+            <div>
+              <label class="form-label">Tags</label>
+              <input class="form-control" type="text" name="tags" placeholder="tag1, tag2, tag3">
+              <div class="form-text">Up to 5 tags, comma-separated.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button class="btn btn-primary" type="submit">Upload</button>
+              <a class="btn btn-outline-secondary" href="/ui/">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {% if detail is defined and detail %}
+        <div class="alert alert-danger mt-3">{{ detail }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

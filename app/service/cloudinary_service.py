@@ -67,18 +67,53 @@ class CloudinaryService:
 def build_transform_params(req: TransformRequest) -> dict[str, Any]:
     """
     Convert API TransformRequest into Cloudinary transformation dict.
-    Cloudinary Python SDK expects keys like: crop/width/height/effect/angle, etc.
+    Applies preset defaults, then allows explicit fields to override.
     """
     params: dict[str, Any] = {}
+
+    # --- Preset defaults ---
+    # Note: keep these conservative; explicit fields can override below.
+    if req.preset == "thumb":
+        params.update({"crop": "thumb", "width": req.width or 200, "height": req.height or 200})
+    elif req.preset == "fit":
+        params.update({"crop": "fit", "width": req.width or 800})
+        if req.height is not None:
+            params["height"] = req.height
+    elif req.preset == "crop":
+        params.update({"crop": "fill", "width": req.width or 800, "height": req.height or 800})
+    elif req.preset == "grayscale":
+        params.update({"effect": "grayscale"})
+    elif req.preset == "sepia":
+        params.update({"effect": "sepia"})
+    elif req.preset == "blur":
+        # Cloudinary supports blur effect like "blur:200"
+        if req.blur is not None:
+            params.update({"effect": f"blur:{req.blur}"})
+        else:
+            params.update({"effect": "blur:100"})
+    elif req.preset == "rotate":
+        if req.angle is not None:
+            params.update({"angle": req.angle})
+        else:
+            params.update({"angle": 90})
+
+    # --- Explicit overrides (if provided) ---
     if req.crop:
         params["crop"] = req.crop
     if req.width is not None:
         params["width"] = req.width
     if req.height is not None:
         params["height"] = req.height
+    if req.quality:
+        params["quality"] = req.quality
     if req.effect:
         params["effect"] = req.effect
+    # rotate-specific explicit override
     if req.angle is not None:
         params["angle"] = req.angle
+    # blur-specific explicit override (takes priority over preset blur)
+    if req.blur is not None and (req.preset == "blur"):
+        params["effect"] = f"blur:{req.blur}"
+
     return params
 

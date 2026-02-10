@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from app.models.tag import Tag
 from app.models.photo_tags import PhotoTag
 from app.repository.base_repository import BaseRepository
@@ -87,3 +87,19 @@ class TagRepository(BaseRepository):
             .order_by(Tag.name.asc())
         )
         return [row[0] for row in res.all()]
+
+    async def list_cloud(self, *, limit: int = 50, offset: int = 0) -> list[tuple[str, int]]:
+        """
+        Returns list of (tag_name, photo_count), sorted by photo_count desc then name asc.
+        Includes only tags that are attached to at least one photo.
+        """
+        stmt = (select(Tag.name,func.count(PhotoTag.photo_id)
+                     .label("cnt"),)
+                .select_from(Tag)
+                .join(PhotoTag, PhotoTag.tag_id == Tag.id)
+                .group_by(Tag.id, Tag.name)
+                .order_by(func.count(PhotoTag.photo_id).desc(), Tag.name.asc())
+                .limit(limit)
+                .offset(offset))
+        res = await self.session.execute(stmt)
+        return [(row[0], int(row[1])) for row in res.all()]

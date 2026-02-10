@@ -1,0 +1,81 @@
+<div class="card mt-3">
+  <div class="card-header fw-semibold">Share</div>
+  <div class="card-body d-grid gap-2">
+
+    <form method="post" action="/ui/photos/{{ photo.id }}/share" class="d-grid gap-2">
+      <input type="hidden" name="transform_params_json" value="">
+      <button class="btn btn-sm btn-outline-primary" type="submit">Create share link</button>
+      <div class="form-text">Creates public UUID for this photo.</div>
+    </form>
+
+    {% if filters is defined and filters.share_uuid %}
+      <a class="btn btn-sm btn-primary" href="/ui/public/{{ filters.share_uuid }}" target="_blank">Open public</a>
+      <a class="btn btn-sm btn-outline-secondary" href="/ui/photos/{{ photo.id }}/share/qr?uuid={{ filters.share_uuid }}">
+        Show QR
+      </a>
+    {% endif %}
+
+    {% if share_uuid is defined and share_uuid %}
+      <a class="btn btn-sm btn-primary" href="/public/{{ share_uuid }}" target="_blank">Open public</a>
+      <a class="btn btn-sm btn-outline-secondary" href="/ui/photos/{{ photo.id }}/share/qr?uuid={{ share_uuid }}">Show QR</a>
+    {% endif %}
+
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header fw-semibold">Transform preview</div>
+  <div class="card-body">
+    <form method="post" action="/ui/photos/{{ photo.id }}/transform" class="d-grid gap-2">
+
+      <select class="form-select form-select-sm" name="preset" required>
+        <option value="fit">fit</option>
+        <option value="thumb">thumb</option>
+        <option value="crop">crop</option>
+        <option value="grayscale">grayscale</option>
+        <option value="sepia">sepia</option>
+        <option value="blur">blur</option>
+        <option value="rotate">rotate</option>
+      </select>
+
+      <div class="row g-2">
+        <div class="col">
+          <input class="form-control form-control-sm" name="width" type="number" min="32" max="2000" placeholder="width (32..2000)">
+        </div>
+        <div class="col">
+          <input class="form-control form-control-sm" name="height" type="number" min="32" max="2000" placeholder="height (32..2000)">
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col">
+          <input class="form-control form-control-sm" name="blur" type="number" min="1" max="200" placeholder="blur (1..200)">
+        </div>
+        <div class="col">
+          <input class="form-control form-control-sm" name="angle" type="number" min="-360" max="360" placeholder="angle (-360..360)">
+        </div>
+      </div>
+
+      <select class="form-select form-select-sm" name="crop">
+        <option value="">crop (optional)</option>
+        <option value="fill">fill</option>
+        <option value="fit">fit</option>
+        <option value="scale">scale</option>
+      </select>
+
+      <select class="form-select form-select-sm" name="quality">
+        <option value="">quality (optional)</option>
+        <option value="auto">auto</option>
+      </select>
+
+      <select class="form-select form-select-sm" name="effect">
+        <option value="">effect (optional)</option>
+        <option value="grayscale">grayscale</option>
+        <option value="sepia">sepia</option>
+      </select>
+
+      <button class="btn btn-sm btn-outline-secondary" type="submit">Preview</button>
+      <div class="form-text">preset is required. blur/angle used only for blur/rotate.</div>
+    </form>
+  </div>
+</div>

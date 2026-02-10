@@ -1,0 +1,45 @@
+<nav class="navbar navbar-expand-lg bg-white border-bottom">
+  <div class="container">
+    <a class="navbar-brand fw-semibold" href="/ui/">PhotoShare</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMain">
+      <form class="d-flex ms-lg-3 my-2 my-lg-0" method="get" action="/ui/">
+        <input class="form-control me-2" type="search" name="q" placeholder="Search photos"
+               value="{{ (filters.q if filters is defined and filters.q is not none else '') }}">
+        <button class="btn btn-outline-secondary" type="submit">Search</button>
+      </form>
+
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+        <li class="nav-item">
+          <a class="nav-link" href="/ui/">Feed</a>
+        </li>
+
+        {# Якщо передаємо current_user у контекст — покажемо “логін/ме/лоґаут” #}
+        {% if current_user is defined and current_user %}
+          <li class="nav-item">
+            <a class="nav-link" href="/ui/photos/upload">Upload</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/ui/me">@{{ current_user.username }}</a>
+          </li>
+          <li class="nav-item">
+            <form method="post" action="/ui/auth/logout" class="d-inline">
+              <button class="btn btn-sm btn-outline-danger">Logout</button>
+            </form>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="/ui/auth/login">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-sm btn-primary" href="/ui/auth/register">Register</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>

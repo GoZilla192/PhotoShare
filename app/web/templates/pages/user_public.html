@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}@{{ profile.username if profile is defined else "" }} — PhotoShare{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row g-3">
+
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header fw-semibold">Profile</div>
+        <div class="card-body">
+          <div class="h5 mb-1">@{{ profile.username }}</div>
+          <div class="text-muted small mb-3">{{ profile.email if profile.email is defined else "" }}</div>
+
+          <div class="d-flex gap-2">
+            <div class="badge text-bg-secondary">Photos: {{ profile.photos_count }}</div>
+            <div class="badge text-bg-secondary">Role: {{ profile.role }}</div>
+          </div>
+
+          {% if profile.is_active is defined and not profile.is_active %}
+            <div class="alert alert-warning mt-3 mb-0">User is inactive.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">Photos</span>
+          <a class="btn btn-sm btn-outline-secondary" href="/ui/">Back</a>
+        </div>
+        <div class="card-body">
+          {% if photos is defined and photos and photos|length > 0 %}
+            <div class="d-grid gap-3">
+              {% for p in photos %}
+                {% include "partials/photo_card.html" %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-muted"><em>No photos.</em></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
