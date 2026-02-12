@@ -38,10 +38,12 @@ class CommentService:
         c = await self.comments.get_by_id(comment_id)
         if not c:
             return
+
         if actor_role not in {UserRole.admin, UserRole.moderator}:
             raise PermissionError("Only admin/moderator can delete comments")
-        async with self.session.begin():
-            await self.comments.delete(c)
+
+        await self.comments.delete(c)
+        await self.session.flush()
 
     async def list_for_photo(self, photo_id: int, limit: int = 50, offset: int = 0) -> list[Comment]:
         # Опційно: перевірка існування фото

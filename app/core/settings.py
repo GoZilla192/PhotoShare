@@ -1,8 +1,9 @@
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-	APP_NAME: str
+	APP_NAME: str = "PhotoShare"
 	DB_HOST: str
 	DB_PORT: int
 	DB_USER: str
@@ -28,3 +29,12 @@ class Settings(BaseSettings):
 	@property
 	def database_url(self):
 		return f"{self.DB_DRIVER}://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+	
+	model_config = SettingsConfigDict(
+        env_file=(
+            ".env.test"
+            if os.getenv("ENV") == "test"
+            else ".env"
+        ),
+        extra="ignore",
+    )
