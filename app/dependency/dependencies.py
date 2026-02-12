@@ -41,8 +41,12 @@ def get_settings() -> Settings:
 
 async def get_session() -> AsyncIterator[AsyncSession]:
     async for s in get_async_session():
-        yield s
-
+        try:
+            yield s
+            await s.commit()
+        except Exception:
+            await s.rollback()
+            raise
 # --- Repositories --------------------------------------------------------------
 
 def users_repo(session: AsyncSession = Depends(get_session)) -> UserRepository:

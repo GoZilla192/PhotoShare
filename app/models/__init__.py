@@ -16,6 +16,7 @@ from app.models.comment import Comment
 from app.models.rating import Rating
 from app.models.transformed_image import TransformedImage
 from app.models.public_link import PublicLink
+from app.models.token_blacklist import TokenBlacklist
 
 __all__ = [
     "Base",
@@ -28,4 +29,5 @@ __all__ = [
     "Rating",
     "TransformedImage",
     "PublicLink",
+    "TokenBlacklist",
 ]

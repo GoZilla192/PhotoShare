@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from sqlalchemy import text
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.responses import RedirectResponse
 
 from app.dependency.dependencies import get_settings, get_session
 from app.routers.router import build_api_router
@@ -70,13 +71,17 @@ def create_app() -> FastAPI:
 
     # --- UI: templates + static ---
     app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
-    app.mount("/js", StaticFiles(directory="app/web/js"), name="js")
+    #app.mount("/js", StaticFiles(directory="app/web/static/js"), name="js")
     templates = Jinja2Templates(directory="app/web/templates")
     app.state.templates = templates
 
     # Роутери
     app.include_router(build_api_router())
     app.include_router(build_ui_router())
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def favicon():
+        return RedirectResponse(url="/static/favicon.ico", status_code=307)
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):

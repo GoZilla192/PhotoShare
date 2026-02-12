@@ -60,3 +60,29 @@ async def require_admin_ui(user=Depends(get_current_user_ui)):
     if user_role != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
     return user
+
+async def get_optional_user_ui(
+    access_token: str | None = Cookie(default=None, alias=COOKIE_NAME),
+    session: AsyncSession = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+):
+    if not access_token:
+        return None
+    try:
+        payload = decode_token(token=access_token, settings=settings)
+    except ValueError:
+        return None
+
+    jti = payload.get("jti")
+    sub = payload.get("sub")
+    if not jti or not sub:
+        return None
+
+    if await TokenBlacklistRepository(session).is_revoked(jti):
+        return None
+
+    user = await UserRepository(session).get_by_id(int(sub))
+    if not user or not user.is_active:
+        return None
+
+    return user

@@ -47,6 +47,8 @@ class AuthService:
         )
 
         user = await self.users.add(user)
+        await self.session.flush()
+
         token = create_access_token(user_id=user.id, role=user.role, settings=self.settings)
         return token
 
@@ -74,8 +76,7 @@ class AuthService:
 
         expires_at = datetime.fromtimestamp(int(exp), tz=timezone.utc)
 
-        # begin() => commit гарантовано
-        async with self.session.begin():
+        try:
             await self.blacklist.add(
                 TokenBlacklist(
                     jti=jti,
@@ -83,3 +84,7 @@ class AuthService:
                     expires_at=expires_at,
                 )
             )
+            await self.session.commit()
+        except Exception:
+            await self.session.rollback()
+            raise
