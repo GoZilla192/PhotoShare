@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query, Request
-from app.ui_routers.deps import get_templates
+from app.ui_routers.deps import get_templates, get_optional_user_ui
 
 from app.service.photos_service import PhotoService
 from app.service.tagging_service import TaggingService
@@ -21,7 +21,7 @@ async def ui_index(
     tag: str | None = Query(default=None),
     sort: str = Query(default="newest"),
     page: int = Query(default=1, ge=1),
-
+    current_user=Depends(get_optional_user_ui),
     photos: PhotoService = Depends(photo_service),
     tagging: TaggingService = Depends(tagging_service),
 ):
@@ -39,6 +39,7 @@ async def ui_index(
             "items": items,
             "total": total,
             "tag_cloud": cloud,
+            "current_user": current_user,
             "filters": {"q": q, "tag": tag, "sort": sort, "page": page},
         },
     )

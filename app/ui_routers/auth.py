@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 from app.auth.service import AuthService
+from app.auth.service import InvalidCredentialsError, InactiveUserError
 from app.dependency.dependencies import auth_service
 from app.ui_routers.deps import get_templates, get_token_from_cookie, COOKIE_NAME
 
@@ -11,15 +12,24 @@ router = APIRouter(prefix="/auth", tags=["UI-Auth"])
 @router.get("/login")
 async def ui_login_form(request: Request):
     templates = get_templates(request)
-    return templates.TemplateResponse("pages/auth/login.html", {"request": request})
+    return templates.TemplateResponse("pages/auth_login.html", {"request": request})
 
 @router.post("/login")
 async def ui_login_submit(
+    request: Request,
     email: str = Form(...),
     password: str = Form(...),
     svc: AuthService = Depends(auth_service),
 ):
-    token = await svc.login(email=email, password=password)
+    templates = get_templates(request)
+    try:
+        token = await svc.login(email=email, password=password)
+    except (InvalidCredentialsError, InactiveUserError) as e:
+        return templates.TemplateResponse(
+            "pages/auth_login.html",
+            {"request": request, "error": str(e), "email": email},
+            status_code=401,
+        )
     resp = RedirectResponse(url="/ui/", status_code=303)
     resp.set_cookie(COOKIE_NAME, token, httponly=True, samesite="lax", path="/")
     return resp
@@ -27,7 +37,7 @@ async def ui_login_submit(
 @router.get("/register")
 async def ui_register_form(request: Request):
     templates = get_templates(request)
-    return templates.TemplateResponse("pages/auth/register.html", {"request": request})
+    return templates.TemplateResponse("pages/auth_register.html", {"request": request})
 
 @router.post("/register")
 async def ui_register_submit(

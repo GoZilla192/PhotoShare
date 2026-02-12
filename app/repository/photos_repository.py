@@ -122,7 +122,7 @@ class PhotoRepository(BaseRepository):
                 stmt = stmt.order_by(Photo.created_at.desc())
 
         # important: distinct to avoid duplicates when joining tags
-        stmt = stmt.distinct(Photo.id).limit(limit).offset(offset)
+        stmt = stmt.order_by(Photo.created_at.desc()).limit(limit).offset(offset)
 
         res = await self.session.execute(stmt)
         return list(res.scalars().unique().all())
@@ -139,10 +139,7 @@ class PhotoRepository(BaseRepository):
         """
         Total count for search() with same filters.
         """
-        stmt = select(func.count(func.distinct(Photo.id)))
-
-        # base FROM
-        stmt = stmt.select_from(Photo)
+        stmt = select(func.count(func.distinct(Photo.id))).select_from(Photo)
 
         if tag:
             stmt = (
@@ -169,13 +166,27 @@ class PhotoRepository(BaseRepository):
             stmt = stmt.where(and_(*conditions))
 
         if min_rating is not None:
+            # для having/group_by робимо надійний підзапит по photo.id
             avg_rating = func.coalesce(func.avg(Rating.value), 0.0)
-            stmt = stmt.group_by(Photo.id).having(avg_rating >= float(min_rating))
-            # у такому випадку count(distinct) через group_by складніше;
-            # найнадійніше — обгорнути у підзапит:
-            subq = stmt.subquery()
-            stmt2 = select(func.count()).select_from(subq)
-            res = await self.session.execute(stmt2)
+
+            base = (
+                select(Photo.id)
+                .select_from(Photo)
+            )
+            if tag:
+                base = (
+                    base.join(PhotoTag, PhotoTag.photo_id == Photo.id)
+                    .join(Tag, Tag.id == PhotoTag.tag_id)
+                )
+            base = base.outerjoin(Rating, Rating.photo_id == Photo.id)
+
+            if conditions:
+                base = base.where(and_(*conditions))
+
+            base = base.group_by(Photo.id).having(avg_rating >= float(min_rating))
+
+            subq = base.subquery()
+            res = await self.session.execute(select(func.count()).select_from(subq))
             return int(res.scalar_one())
 
         res = await self.session.execute(stmt)

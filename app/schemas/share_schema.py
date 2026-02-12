@@ -28,6 +28,6 @@ class TransformRequest(BaseModel):
     height: int | None = Field(default=None, ge=32, le=2000)
     blur: int | None = Field(default=None, ge=1, le=200)     # лише для blur
     angle: int | None = Field(default=None, ge=-360, le=360)  # лише для rotate
-    crop: str | None = Field(default=None),
-    quality: str | None = Field(default=None),
-    effect: str | None = Field(default=None),
+    crop: str | None = Field(default=None)
+    quality: str | None = Field(default=None)
+    effect: str | None = Field(default=None)
