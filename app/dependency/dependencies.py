@@ -41,12 +41,8 @@ def get_settings() -> Settings:
 
 async def get_session() -> AsyncIterator[AsyncSession]:
     async for s in get_async_session():
-        try:
-            yield s
-            await s.commit()
-        except Exception:
-            await s.rollback()
-            raise
+        yield s
+
 # --- Repositories --------------------------------------------------------------
 
 def users_repo(session: AsyncSession = Depends(get_session)) -> UserRepository:
@@ -91,7 +87,6 @@ def user_service(
 ) -> UserService:
     return UserService(session=session, photos_repo=photo_repo, users_repo=user_repo)
 
-
 def photo_service(
     session: AsyncSession = Depends(get_session),
     repo: PhotoRepository = Depends(photos_repo),
@@ -107,13 +102,12 @@ def tagging_service(
 ) -> TaggingService:
     return TaggingService(session=session, photos_repo=photo_repo, tags_repo=tag_repo)
 
-
 def rating_service(
-    session: AsyncSession = Depends(get_session),
-    ratings: RatingRepository = Depends(ratings_repo),
-    photos: PhotoRepository = Depends(photos_repo),
+    session: AsyncSession = Depends(get_session)
 ) -> RatingService:
-    return RatingService(session=session, ratings_repo=ratings, photos_repo=photos)
+    ratings_repo = RatingRepository(session)
+    photos_repo = PhotoRepository(session)
+    return RatingService(session=session, ratings_repo=ratings_repo, photos_repo=photos_repo)
 
 def comment_service(
     session: AsyncSession = Depends(get_session),
@@ -148,4 +142,3 @@ def auth_service(
     settings: Settings = Depends(get_settings)
 ) -> AuthService:
     return AuthService(session=session, users=users, blacklist=blacklist, settings=settings)
-

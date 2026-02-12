@@ -11,6 +11,7 @@ from app.models.user import User
 from app.schemas.photo_schema import PhotoRead, PhotoListResponse, PhotoUpdateDescriptionRequest
 from app.service.photos_service import PhotoService
 from app.dependency.dependencies import photo_service
+from app.mappers.photo_mapper import map_photo_to_read
 
 
 router = APIRouter(prefix="/photos", tags=["photos"])
@@ -59,7 +60,7 @@ async def get_photo_by_id(
     try:
         photo = await photos.get_photo(photo_id)
         photos.ensure_owner_or_admin(current_user, photo.user_id)
-        return PhotoRead.model_validate(photo)
+        return map_photo_to_read(photo, photos.cloudinary)
     except NotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except PermissionDeniedError as exc:
@@ -77,7 +78,7 @@ async def get_photo_by_unique_url(
     # якщо потрібно auth-only — додамо Depends(get_current_user).
     try:
         photo = await photos.get_photo_by_unique_url(photo_unique_url)
-        return PhotoRead.model_validate(photo)
+        return map_photo_to_read(photo, photos.cloudinary)
     except NotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
@@ -91,7 +92,7 @@ async def list_my_photos(
     photos: PhotoService = Depends(photo_service),
 ) -> PhotoListResponse:
     items = await photos.list_by_user(current_user.id, limit=limit, offset=offset)
-    items = [PhotoRead.model_validate(photo) for photo in items]
+    items = [map_photo_to_read(photo, photos.cloudinary) for photo in items]
     total = await photos.count_by_user(current_user.id)
     return PhotoListResponse(items=items, total=total, limit=limit, offset=offset)
 
@@ -105,7 +106,7 @@ async def list_user_photos(
 ) -> PhotoListResponse:
     # Публічний список фото користувача для профілю (UI).
     items = await photos.list_by_user(user_id, limit=limit, offset=offset)
-    items = [PhotoRead.model_validate(photo) for photo in items]
+    items = [map_photo_to_read(photo, photos.cloudinary) for photo in items]
     total = await photos.count_by_user(user_id)
     return PhotoListResponse(items=items, total=total, limit=limit, offset=offset)
 
@@ -118,12 +119,9 @@ async def update_photo_description(
     photos: PhotoService = Depends(photo_service),
 ) -> PhotoRead:
     try:
-        updated = await photos.update_description(
-            photo_id=photo_id,
-            description=payload.description,
-            current_user=current_user,
-        )
-        return PhotoRead.model_validate(updated)
+        updated = await photos.update_description(photo_id, payload.description, current_user)
+
+        return map_photo_to_read(updated, photos.cloudinary)
     except NotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except PermissionDeniedError as exc:

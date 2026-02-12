@@ -1,44 +1,47 @@
 from __future__ import annotations
 
-from sqlalchemy import select, delete, func
+from sqlalchemy import select, func
 from app.models.rating import Rating
-from app.repository.base_repository import BaseRepository
 
 
-class RatingRepository(BaseRepository):
-    async def upsert(self, *, photo_id: int, user_id: int, rating: int) -> Rating:
-        """
-        Set/update rating by (photo_id, user_id). Uses ORM merge-like pattern.
-        (Unique constraint in DB enforces single rating.)
-        """
-        res = await self.session.execute(
-            select(Rating).where(Rating.photo_id == photo_id, Rating.user_id == user_id)
+class RatingRepository:
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get_by_photo_and_user(self, photo_id: int, user_id: int):
+        stmt = select(Rating).where(
+            Rating.photo_id == photo_id,
+            Rating.user_id == user_id,
         )
-        obj = res.scalar_one_or_none()
-        if obj is None:
-            obj = Rating(photo_id=photo_id, user_id=user_id, value=rating)
-            self.session.add(obj)
-        else:
-            obj.value = rating
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
 
+    async def get_by_id(self, rating_id: int):
+        stmt = select(Rating).where(Rating.id == rating_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def create(self, rating: Rating):
+        self.session.add(rating)
         await self.session.flush()
-        return obj
+        return rating
 
-    async def delete_for_user(self, *, photo_id: int, user_id: int) -> bool:
-        res = await self.session.execute(
-            delete(Rating).where(Rating.photo_id == photo_id, Rating.user_id == user_id).returning(Rating.id)
-        )
-        return res.scalar_one_or_none() is not None
+    async def delete(self, rating: Rating):
+        await self.session.delete(rating)
+        await self.session.flush()
 
-    async def get_aggregate(self, photo_id: int) -> tuple[float, int]:
-        res = await self.session.execute(
-            select(func.avg(Rating.value), func.count(Rating.id)).where(Rating.photo_id == photo_id)
-        )
-        avg, cnt = res.one()
-        return float(avg or 0.0), int(cnt or 0)
+    async def get_rating_stats(self, photo_id: int):
+        stmt = select(
+            func.count(Rating.id),
+            func.avg(Rating.value),
+        ).where(Rating.photo_id == photo_id)
 
-    async def get_for_user(self, *, photo_id: int, user_id: int) -> int | None:
-        res = await self.session.execute(
-            select(Rating.value).where(Rating.photo_id == photo_id, Rating.user_id == user_id)
-        )
-        return res.scalar_one_or_none()
+        result = await self.session.execute(stmt)
+        count, avg = result.one()
+
+        return {
+            "photo_id": photo_id,
+            "avg_rating": float(avg) if avg is not None else None,
+            "ratings_count": count or 0,
+        }

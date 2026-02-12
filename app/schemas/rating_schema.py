@@ -8,5 +8,6 @@ class RatingSetRequest(BaseModel):
 
 
 class RatingResponse(BaseModel):
-    avg: float
-    count: int
+    photo_id: int
+    avg_rating: float | None
+    ratings_count: int
