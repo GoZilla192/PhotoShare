@@ -2,12 +2,10 @@ from __future__ import annotations
 
 from sqlalchemy import select, func
 from app.models.rating import Rating
+from app.repository.base_repository import BaseRepository
 
 
-class RatingRepository:
-
-    def __init__(self, session: AsyncSession):
-        self.session = session
+class RatingRepository(BaseRepository):
 
     async def get_by_photo_and_user(self, photo_id: int, user_id: int):
         stmt = select(Rating).where(
