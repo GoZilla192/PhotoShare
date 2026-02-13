@@ -33,9 +33,9 @@ async def ui_index(
 
     templates = get_templates(request)
     return templates.TemplateResponse(
+        request,
         "pages/index.html",
         {
-            "request": request,
             "items": items,
             "total": total,
             "tag_cloud": cloud,
@@ -62,9 +62,9 @@ async def ui_photo_detail(
 
     templates = get_templates(request)
     return templates.TemplateResponse(
+        request,
         "pages/photos/detail.html",
         {
-            "request": request,
             "photo": photo,
             "tags": tags,
             "rating": rating_stats,
@@ -85,9 +85,9 @@ async def ui_user_public(
 
     templates = get_templates(request)
     return templates.TemplateResponse(
+        request,
         "pages/users/public.html",
         {
-            "request": request,
             "profile": profile,
             "photos": user_photos,
         },

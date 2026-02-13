@@ -92,8 +92,9 @@ def create_app() -> FastAPI:
         # Для UI віддаємо HTML-шаблони
         if exc.status_code in (403, 404):
             return app.state.templates.TemplateResponse(
+                request,
                 f"errors/{exc.status_code}.html",
-                {"request": request, "detail": exc.detail},
+                {"detail": exc.detail},
                 status_code=exc.status_code,
             )
 
@@ -108,8 +109,9 @@ def create_app() -> FastAPI:
 
         # Для UI можна показати 403 або окремий шаблон 422 (як захочеш)
         return app.state.templates.TemplateResponse(
+            request,
             "errors/403.html",
-            {"request": request, "detail": "Validation error"},
+            {"detail": "Validation error"},
             status_code=403,
         )
 
@@ -118,8 +120,8 @@ def create_app() -> FastAPI:
         if request.url.path.startswith(("/docs", "/openapi", "/health")):
             raise exc  # щоб API не “ховав” 500
         return app.state.templates.TemplateResponse(
+            request,
             "errors/500.html",
-            {"request": request},
             status_code=500,
         )
 

@@ -45,8 +45,9 @@ async def ui_share_qr(
     png_b64 = await svc.make_public_qr(uuid=uuid)
     templates = get_templates(request)
     return templates.TemplateResponse(
+        request,
         "pages/photos/share_qr.html",
-        {"request": request, "photo_id": photo_id, "uuid": uuid, "png_base64": png_b64},
+        {"photo_id": photo_id, "uuid": uuid, "png_base64": png_b64},
     )
 
 
@@ -87,6 +88,7 @@ async def ui_transform_preview(
 
     templates = get_templates(request)
     return templates.TemplateResponse(
+        request,
         "pages/photos/transform_preview.html",
-        {"request": request, "photo": photo, "url": url, "params": params},
+        {"photo": photo, "url": url, "params": params},
     )

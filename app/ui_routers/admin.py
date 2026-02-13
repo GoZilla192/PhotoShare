@@ -18,8 +18,9 @@ async def ui_admin_users(
     items = await users.list_users(limit=200, offset=0, current_user=admin)
     templates = get_templates(request)
     return templates.TemplateResponse(
+        request,
         "pages/admin/users.html",
-        {"request": request, "users": items, "current_user": admin},
+        {"users": items, "current_user": admin},
     )
 
 @router.post("/users/{user_id}/ban")

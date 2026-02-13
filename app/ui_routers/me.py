@@ -17,6 +17,7 @@ async def ui_me(
     profile = await users.get_me(current_user)  # :contentReference[oaicite:10]{index=10}
     templates = get_templates(request)
     return templates.TemplateResponse(
+        request,
         "pages/me.html",
-        {"request": request, "profile": profile, "current_user": current_user},
+        {"profile": profile, "current_user": current_user},
     )
