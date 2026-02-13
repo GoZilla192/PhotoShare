@@ -12,7 +12,7 @@ router = APIRouter(prefix="/auth", tags=["UI-Auth"])
 @router.get("/login")
 async def ui_login_form(request: Request):
     templates = get_templates(request)
-    return templates.TemplateResponse("pages/auth_login.html", {"request": request})
+    return templates.TemplateResponse(request, "pages/auth_login.html")
 
 @router.post("/login")
 async def ui_login_submit(
@@ -26,8 +26,9 @@ async def ui_login_submit(
         token = await svc.login(email=email, password=password)
     except (InvalidCredentialsError, InactiveUserError) as e:
         return templates.TemplateResponse(
+            request,
             "pages/auth_login.html",
-            {"request": request, "error": str(e), "email": email},
+            {"error": str(e), "email": email},
             status_code=401,
         )
     resp = RedirectResponse(url="/ui/", status_code=303)
@@ -37,7 +38,7 @@ async def ui_login_submit(
 @router.get("/register")
 async def ui_register_form(request: Request):
     templates = get_templates(request)
-    return templates.TemplateResponse("pages/auth_register.html", {"request": request})
+    return templates.TemplateResponse(request, "pages/auth_register.html")
 
 @router.post("/register")
 async def ui_register_submit(

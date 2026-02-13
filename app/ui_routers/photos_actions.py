@@ -23,7 +23,7 @@ def _parse_tags_csv(tags: str | None) -> list[str] | None:
 @router.get("/photos/upload")
 async def ui_upload_form(request: Request, _=Depends(get_current_user_ui)):
     templates = get_templates(request)
-    return templates.TemplateResponse("pages/photos/upload.html", {"request": request})
+    return templates.TemplateResponse(request, "pages/photos/upload.html")
 
 @router.post("/photos/upload")
 async def ui_upload_submit(
