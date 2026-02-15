@@ -30,7 +30,7 @@ class CommentService:
         if c.user_id != actor_user_id:
             raise PermissionError("Only owner can edit comment")
         c.text = new_text
-        async with self.session.begin():
+        async with self.session:
             await self.session.flush()
         return c
 
