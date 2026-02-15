@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import (
 
 from app.main import app
 from app.models.base import Base
+from app.models.user import User
 from app.dependency.dependencies import get_session
 from app.service.photos_service import PhotoService
 from app.repository.photos_repository import PhotoRepository
@@ -23,6 +24,7 @@ from app.models.user import UserRole
 
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
 
 @pytest.fixture(scope="session")
 async def engine():
@@ -122,25 +124,28 @@ def override_current_user():
     app.dependency_overrides.pop(get_current_user, None)
 
 @pytest.fixture
-def override_admin_user():
-    fake_user = SimpleNamespace(
-        id=999,
-        role=UserRole.admin,
+def override_regular_user(app):
+    user = User(
+        id=1,
+        username="usr1",
+        email="usr1@test.com",
+        password_hash="x",
+        role=UserRole.user,
         is_active=True,
     )
 
     async def _override():
-        return fake_user
+        return user
 
     app.dependency_overrides[get_current_user] = _override
-    yield fake_user
-    app.dependency_overrides.pop(get_current_user, None)
+    yield user
+    app.dependency_overrides.clear()
 
 @pytest.fixture
-def override_moderator_user():
+def override_admin_user():
     fake_user = SimpleNamespace(
         id=999,
-        role=UserRole.moderator,
+        role=UserRole.admin,
         is_active=True,
     )
 
