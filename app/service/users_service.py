@@ -60,7 +60,8 @@ class UserService:
             if existing and existing.id != current_user.id:
                 raise ConflictError("Email already taken")
 
-        async with self.session.begin():
+        # async with self.session.begin():
+        async with self.session:
             updated = await self.users.update_profile_fields(
                 current_user.id,
                 username=req.username,
@@ -79,7 +80,8 @@ class UserService:
     async def ban_user(self, *, target_user_id: int, current_user: User) -> UserBanResponse:
         self._require_admin(current_user)
 
-        async with self.session.begin():
+        # async with self.session.begin():
+        async with self.session:
             ok = await self.users.set_is_active(target_user_id, False)
 
         if not ok:
@@ -90,7 +92,8 @@ class UserService:
     async def unban_user(self, *, target_user_id: int, current_user: User) -> UserBanResponse:
         self._require_admin(current_user)
 
-        async with self.session.begin():
+        # async with self.session.begin():
+        async with self.session:
             ok = await self.users.set_is_active(target_user_id, True)
 
         if not ok:
@@ -101,7 +104,8 @@ class UserService:
     async def set_role(self, *, target_user_id: int, role: UserRole, current_user: User) -> None:
         self._require_admin(current_user)
 
-        async with self.session.begin():
+        # async with self.session.begin():
+        async with self.session:
             target = await self.users.get_by_id(target_user_id)
             if not target:
                 raise NotFoundError("User not found")
@@ -116,4 +120,3 @@ class UserService:
     def _require_admin(current_user: User) -> None:
         if current_user.role != UserRole.admin:
             raise PermissionDeniedError("Admin role required")
-

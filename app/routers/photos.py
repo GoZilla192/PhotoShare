@@ -46,6 +46,29 @@ async def upload_photo(
         # Якщо треба, можна деталізувати (наприклад, 400 для невалідного файлу).
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
 
+@router.get("/search", response_model=PhotoListResponse)
+async def search_photos(
+    q: str | None = Query(default=None),
+    tag: str | None = Query(default=None),
+    min_rating: float | None = Query(default=None, ge=1, le=5),
+    date_from: datetime | None = Query(default=None),
+    date_to: datetime | None = Query(default=None),
+    sort: str = Query(default="newest", pattern="^(newest|oldest|top|low)$"),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    photos: PhotoService = Depends(photo_service),
+):
+    items, total = await photos.search_photos(
+        q=q, tag=tag, min_rating=min_rating,
+        date_from=date_from, date_to=date_to,
+        sort=sort, limit=limit, offset=offset,
+    )
+    return PhotoListResponse(
+        items=[PhotoRead.model_validate(p, from_attributes=True) for p in items],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
 
 @router.get("/{photo_id}", response_model=PhotoRead)
 async def get_photo_by_id(
@@ -141,28 +164,3 @@ async def delete_photo(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except PermissionDeniedError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
-
-
-@router.get("/search", response_model=PhotoListResponse)
-async def search_photos(
-    q: str | None = Query(default=None),
-    tag: str | None = Query(default=None),
-    min_rating: float | None = Query(default=None, ge=1, le=5),
-    date_from: datetime | None = Query(default=None),
-    date_to: datetime | None = Query(default=None),
-    sort: str = Query(default="newest", pattern="^(newest|oldest|top|low)$"),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
-    photos: PhotoService = Depends(photo_service),
-):
-    items, total = await photos.search_photos(
-        q=q, tag=tag, min_rating=min_rating,
-        date_from=date_from, date_to=date_to,
-        sort=sort, limit=limit, offset=offset,
-    )
-    return PhotoListResponse(
-        items=[PhotoRead.model_validate(p, from_attributes=True) for p in items],
-        total=total,
-        limit=limit,
-        offset=offset,
-    )
