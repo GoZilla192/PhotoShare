@@ -104,7 +104,11 @@ async def get_photo_rating(
 ) -> RatingResponse:
     try:
         stats = await svc.get_stats(photo_id=photo_id)
-        return RatingResponse(avg=stats["avg"], count=stats["count"])
+        return RatingResponse(
+                                 photo_id=photo_id,
+                                 avg_rating=stats["avg_rating"],
+                                 ratings_count=stats["ratings_count"],
+                             )
     except NotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -119,7 +123,11 @@ async def set_photo_rating(
     try:
         await svc.set_rating(photo_id=photo_id, value=body.value, current_user=current_user)
         stats = await svc.get_stats(photo_id=photo_id)
-        return RatingResponse(avg=stats["avg"], count=stats["count"])
+        return RatingResponse(
+                                 photo_id=photo_id,
+                                 avg_rating=stats["avg_rating"],
+                                 ratings_count=stats["ratings_count"],
+                             )
     except NotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except PermissionDeniedError as exc:

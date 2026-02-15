@@ -33,8 +33,15 @@ class TaggingService:
         if current_user.role != UserRole.admin and photo.user_id != current_user.id:
             raise PermissionDeniedError("Insufficient permissions")
 
-        async with self.session.begin():
-            return await self.tags.set_tags_for_photo(photo_id, tag_names, max_tags=5)
+        result = await self.tags.set_tags_for_photo(
+            photo_id,
+            tag_names,
+            max_tags=5,
+        )
+
+        await self.session.flush()
+
+        return result
 
     def _parse_tags_csv(self, tags: str | None) -> list[str] | None:
         if not tags:
@@ -50,4 +57,3 @@ class TaggingService:
         items = await self.tags.list_cloud(limit=limit, offset=offset)
         # Повертаємо UI-friendly структуру, без ORM.
         return [{"name": name, "count": count} for name, count in items]
-

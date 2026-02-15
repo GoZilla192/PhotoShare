@@ -49,18 +49,23 @@ class ShareService:
 
         public_uuid = str(uuidlib.uuid4())
 
-        async with self.session.begin():
-            ti = await self.transformed.create_for_photo(
-                photo_id=photo.id,
-                image_url=transformed_url,
-                transformation=transformation_str,
-            )
+        ti = await self.transformed.create_for_photo(
+            photo_id=photo.id,
+            image_url=transformed_url,
+            transformation=transformation_str,
+        )
 
-            link = PublicLink(
-                uuid=public_uuid,
-                transformed_image_id=ti.id,
-            )
-            await self.public_links.add(link)
+        qr_url = self.qr.make_png_base64(public_uuid)
+
+        link = PublicLink(
+            uuid=public_uuid,
+            transformed_image_id=ti.id,
+            qr_code_url=qr_url,
+        )
+
+        await self.public_links.add(link)
+
+        await self.session.flush()
 
         return public_uuid
 
@@ -68,7 +73,7 @@ class ShareService:
         link = await self.public_links.get_by_uuid(uuid)
         if not link:
             raise NotFoundError("Public link not found")
-        return link.transformed_image.url
+        return link.transformed_image.image_url
 
     async def make_public_qr(self, *, uuid: str) -> str:
         url = f"/public/{uuid}"
