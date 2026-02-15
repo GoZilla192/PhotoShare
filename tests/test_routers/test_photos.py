@@ -5,6 +5,8 @@ from types import SimpleNamespace
 from app.models.photo import Photo
 from app.core.exceptions import NotFoundError, PermissionDeniedError
 from app.main import app as fastapi_app
+from app.dependency.dependencies import photo_service
+import app.auth.dependencies as auth_deps
 
 
 @pytest.fixture
@@ -145,6 +147,7 @@ async def test_delete_photo_not_found(async_client, app):
 
 @pytest.mark.asyncio
 async def test_search_photos_success(async_client, app):
+
     class FakeService:
         async def search_photos(self, **kwargs):
             return (
@@ -162,20 +165,18 @@ async def test_search_photos_success(async_client, app):
                 1,
             )
 
-    async def fake_user():
-        return SimpleNamespace(id=1, role="user")
+    def fake_require_roles(*roles):
+        async def _dep():
+            return SimpleNamespace(id=1, role="admin", is_active=True)
+        return _dep
 
-    from app.routers.photos import photo_service as get_photo_service
-    from app.auth.dependencies import get_current_user
-
-    app.dependency_overrides[get_photo_service] = lambda: FakeService()
-    app.dependency_overrides[get_current_user] = fake_user
+    app.dependency_overrides[photo_service] = lambda: FakeService()
+    app.dependency_overrides[auth_deps.require_roles] = fake_require_roles
 
     response = await async_client.get("/photos/search?q=test")
 
-    print(response.json())
-
     assert response.status_code == 200
-    assert response.json()["total"] == 1
+    data = response.json()
+    assert data["total"] == 1
 
     app.dependency_overrides.clear()

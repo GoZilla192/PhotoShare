@@ -68,7 +68,6 @@ async def test_set_role_route(async_client, override_admin_user, db_session):
 
 @pytest.mark.asyncio
 async def test_update_me_route(async_client, db_session, app):
-    # 1️⃣ створюємо користувача в БД
     user = User(
         username="u1",
         email="u1@test.com",
@@ -79,14 +78,12 @@ async def test_update_me_route(async_client, db_session, app):
     db_session.add(user)
     await db_session.flush()
 
-    # 2️⃣ override dependency
     async def _override():
         return user
 
     from app.auth.dependencies import get_current_user
     app.dependency_overrides[get_current_user] = _override
 
-    # 3️⃣ викликаємо endpoint
     response = await async_client.patch(
         "/users/me",
         json={"username": "newname"},
