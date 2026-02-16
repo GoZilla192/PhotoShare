@@ -14,6 +14,7 @@ from app.schemas.user_profile_shema import (
     UserBanResponse,
 )
 
+
 class UserService:
     def __init__(
         self,
@@ -24,6 +25,8 @@ class UserService:
         self.session = session
         self.users = users_repo
         self.photos = photos_repo
+
+    # ---------------- PUBLIC PROFILE ----------------
 
     async def get_public_profile_by_username(self, username: str) -> UserPublicProfile:
         user = await self.users.get_by_username(username)
@@ -37,6 +40,8 @@ class UserService:
         data = UserPublicProfile.model_validate(user, from_attributes=True)
         return data.model_copy(update={"photos_count": photos_count})
 
+    # ---------------- ME ----------------
+
     async def get_me(self, current_user: User) -> UserMeProfile:
         photos_count = 0
         if self.photos is not None:
@@ -45,28 +50,34 @@ class UserService:
         data = UserMeProfile.model_validate(current_user, from_attributes=True)
         return data.model_copy(update={"photos_count": photos_count})
 
-    async def update_me(self, *, current_user: User, req: UserMeUpdateRequest) -> UserMeProfile:
+    async def update_me(
+        self,
+        *,
+        current_user: User,
+        req: UserMeUpdateRequest,
+    ) -> UserMeProfile:
+
         if not current_user.is_active:
             raise PermissionDeniedError("User is inactive")
 
-        # Унікальність username/email — 409 замість 500
+        # --- username uniqueness ---
         if req.username and req.username != current_user.username:
             existing = await self.users.get_by_username(req.username)
             if existing and existing.id != current_user.id:
                 raise ConflictError("Username already taken")
 
+        # --- email uniqueness ---
         if req.email and req.email != current_user.email:
             existing = await self.users.get_by_email(req.email)
             if existing and existing.id != current_user.id:
                 raise ConflictError("Email already taken")
 
-        # async with self.session.begin():
-        async with self.session:
-            updated = await self.users.update_profile_fields(
-                current_user.id,
-                username=req.username,
-                email=req.email,
-            )
+        updated = await self.users.update_profile_fields(
+            current_user.id,
+            username=req.username,
+            email=req.email,
+        )
+
         if not updated:
             raise NotFoundError("User not found")
 
@@ -77,44 +88,69 @@ class UserService:
         data = UserMeProfile.model_validate(updated, from_attributes=True)
         return data.model_copy(update={"photos_count": photos_count})
 
-    async def ban_user(self, *, target_user_id: int, current_user: User) -> UserBanResponse:
+    # ---------------- ADMIN ACTIONS ----------------
+
+    async def ban_user(
+        self,
+        *,
+        target_user_id: int,
+        current_user: User,
+    ) -> UserBanResponse:
+
         self._require_admin(current_user)
 
-        # async with self.session.begin():
-        async with self.session:
-            ok = await self.users.set_is_active(target_user_id, False)
+        ok = await self.users.set_is_active(target_user_id, False)
 
         if not ok:
             raise NotFoundError("User not found")
 
         return UserBanResponse(user_id=target_user_id, is_active=False)
 
-    async def unban_user(self, *, target_user_id: int, current_user: User) -> UserBanResponse:
+    async def unban_user(
+        self,
+        *,
+        target_user_id: int,
+        current_user: User,
+    ) -> UserBanResponse:
+
         self._require_admin(current_user)
 
-        # async with self.session.begin():
-        async with self.session:
-            ok = await self.users.set_is_active(target_user_id, True)
+        ok = await self.users.set_is_active(target_user_id, True)
 
         if not ok:
             raise NotFoundError("User not found")
 
         return UserBanResponse(user_id=target_user_id, is_active=True)
 
-    async def set_role(self, *, target_user_id: int, role: UserRole, current_user: User) -> None:
+    async def set_role(
+        self,
+        *,
+        target_user_id: int,
+        role: UserRole,
+        current_user: User,
+    ) -> None:
+
         self._require_admin(current_user)
 
-        # async with self.session.begin():
-        async with self.session:
-            target = await self.users.get_by_id(target_user_id)
-            if not target:
-                raise NotFoundError("User not found")
-            target.role = role
-            await self.session.flush()
+        target = await self.users.get_by_id(target_user_id)
+        if not target:
+            raise NotFoundError("User not found")
 
-    async def list_users(self, *, limit: int = 200, offset: int = 0, current_user: User) -> list[User]:
+        target.role = role
+        await self.session.flush()
+
+    async def list_users(
+        self,
+        *,
+        limit: int = 200,
+        offset: int = 0,
+        current_user: User,
+    ) -> list[User]:
+
         self._require_admin(current_user)
         return await self.users.list_users(limit=limit, offset=offset)
+
+    # ---------------- INTERNAL ----------------
 
     @staticmethod
     def _require_admin(current_user: User) -> None:
