@@ -11,7 +11,7 @@ from starlette.responses import RedirectResponse
 
 from app.dependency.dependencies import get_settings, get_session
 from app.routers.router import build_api_router
-from app.ui_routers.ui_router import build_ui_router
+# from app.ui_routers.ui_router import build_ui_router
 from fastapi import Request, HTTPException
 from fastapi.exception_handlers import http_exception_handler as fastapi_http_exception_handler
 from fastapi.exception_handlers import request_validation_exception_handler
@@ -77,7 +77,7 @@ def create_app() -> FastAPI:
 
     # Роутери
     app.include_router(build_api_router())
-    app.include_router(build_ui_router())
+    # app.include_router(build_ui_router())
 
     @app.get("/favicon.ico", include_in_schema=False)
     async def favicon():
